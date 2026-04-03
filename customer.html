@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>KainToGo — Browse Deals</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="kaintogo-shared.js"></script>
+<style id="sharedStyle">
+:root{
+  --g:#1B4D3E;--gl:#E5F5E8;--gm:#2d6b58;--gd:#133829;
+  --w:#FFFFFF;--dark:#212529;--gray:#6c757d;--lgray:#f8f9fa;
+  --bdr:#dee2e6;--amber:#e8a020;--amber-l:#fff8e6;--red:#dc3545;
+  --r:8px;--rl:16px;
+  --sh:0 2px 12px rgba(27,77,62,.10);--shl:0 8px 32px rgba(27,77,62,.15);
+  --serif:'Cormorant Garamond',serif;--sans:'Montserrat',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--lgray);color:var(--dark)}
+.hidden{display:none!important}
+.btn{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.8px;padding:9px 22px;border-radius:var(--r);border:1.5px solid var(--g);cursor:pointer;transition:all .2s;text-transform:uppercase;display:inline-block}
+.btn-p{background:var(--g);color:var(--w)}.btn-p:hover{background:var(--gd)}
+.btn-o{background:transparent;color:var(--g)}.btn-o:hover{background:var(--gl)}
+.btn-sm{padding:6px 14px;font-size:10px}
+.btn-amber{background:var(--amber);color:var(--w);border-color:var(--amber)}
+.btn-danger{border-color:var(--red);color:var(--red);background:transparent}.btn-danger:hover{background:#fff5f5}
+.btn-w{background:white;color:var(--g);border-color:white}.btn-w:hover{background:var(--gl)}
+.btn-ghost{border-color:rgba(255,255,255,.5);color:white;background:transparent}.btn-ghost:hover{background:rgba(255,255,255,.1)}
+.fg{margin-bottom:1rem}
+.fg label{display:block;font-size:10px;font-weight:700;color:var(--dark);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 14px;border:1.5px solid var(--bdr);border-radius:var(--r);font-family:var(--sans);font-size:13px;color:var(--dark);transition:border-color .2s;background:var(--w)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--g)}
+.fg textarea{resize:vertical;min-height:80px}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--g);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.b-green{background:var(--gl);color:var(--g)}.b-amber{background:#fff3cd;color:#856404}
+.b-blue{background:#cff4fc;color:#055160}.b-red{background:#f8d7da;color:#842029}
+.b-gray{background:#e9ecef;color:#495057}
+.card{background:var(--w);border-radius:var(--rl);box-shadow:var(--sh);overflow:hidden}
+.scard{background:var(--w);border-radius:var(--rl);padding:1.25rem;box-shadow:var(--sh)}
+.slbl{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:.8px;text-transform:uppercase;margin-bottom:.4rem}
+.sval{font-family:var(--serif);font-size:28px;font-weight:600;color:var(--g);line-height:1}
+.schg{font-size:10px;color:#28a745;margin-top:5px;font-weight:600}
+.icard{background:var(--g);border-radius:var(--rl);padding:1.25rem;color:white;box-shadow:var(--sh)}
+.icard .ico2{font-size:26px;margin-bottom:.5rem}
+.icard .ilbl{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:4px}
+.icard .ival{font-family:var(--serif);font-size:30px;font-weight:600}
+.icard .iunit{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+.tcard{background:var(--w);border-radius:var(--rl);box-shadow:var(--sh);overflow:hidden;margin-bottom:1.5rem}
+.thead2{padding:1rem 1.25rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.thead2 h3{font-family:var(--serif);font-size:17px}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gray);padding:9px 14px;text-align:left;background:var(--lgray);border-bottom:1px solid var(--bdr)}
+tbody tr{border-bottom:1px solid var(--bdr);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--gl)}
+tbody td{padding:11px 14px;font-size:12px}
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem}
+.moverlay.open{display:flex}
+.modal{background:var(--w);border-radius:var(--rl);padding:2rem;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;position:relative}
+.modal h3{font-family:var(--serif);font-size:22px;color:var(--g);margin-bottom:1.25rem}
+.mfoot{display:flex;gap:10px;justify-content:flex-end;margin-top:1.5rem}
+.close-x{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray)}
+.tabs{display:flex;border-bottom:2px solid var(--bdr);margin-bottom:1.5rem;overflow-x:auto}
+.tab{padding:10px 18px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;color:var(--gray);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;text-transform:uppercase;white-space:nowrap}
+.tab.act{color:var(--g);border-bottom-color:var(--g)}
+.dash{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 64px)}
+.dside{background:var(--w);border-right:1px solid var(--bdr);padding:1rem 0}
+.ditem{display:flex;align-items:center;gap:10px;padding:10px 1.25rem;font-size:12px;font-weight:600;color:var(--gray);cursor:pointer;transition:all .2s;border-left:3px solid transparent}
+.ditem:hover,.ditem.act{color:var(--g);background:var(--gl);border-left-color:var(--g)}
+.ditem .ico{font-size:15px;width:20px;text-align:center}
+.dcon{padding:1.5rem;background:var(--lgray);overflow-y:auto}
+.dhead{margin-bottom:1.5rem}
+.dhead h2{font-family:var(--serif);font-size:26px}
+.dhead p{font-size:12px;color:var(--gray);margin-top:3px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.igrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+.chart-card{background:var(--w);border-radius:var(--rl);padding:1.25rem;box-shadow:var(--sh)}
+.chart-card h3{font-family:var(--serif);font-size:16px;margin-bottom:1rem}
+.chart-wrap{position:relative;height:200px}
+.frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1.25rem}
+.fsel{padding:7px 12px;border:1.5px solid var(--bdr);border-radius:var(--r);font-family:var(--sans);font-size:11px;font-weight:600;color:var(--dark);background:var(--w);cursor:pointer}
+.fsel:focus{outline:none;border-color:var(--g)}
+.search-in{padding:8px 14px;border:1.5px solid var(--bdr);border-radius:var(--r);font-family:var(--sans);font-size:12px;color:var(--dark);background:var(--w)}
+.search-in:focus{outline:none;border-color:var(--g)}
+.toast-con{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--dark);color:white;padding:11px 18px;border-radius:var(--r);font-size:12px;font-weight:500;box-shadow:var(--shl);animation:tin .3s ease;max-width:320px}
+.toast.s{background:var(--g)}.toast.e{background:var(--red)}
+@keyframes tin{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+nav{background:var(--w);border-bottom:1px solid var(--bdr);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer}
+.logo img{height:36px;object-fit:contain}
+.logo-text{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--g);letter-spacing:2px}
+.ham{display:none;background:none;border:none;cursor:pointer;font-size:22px;color:var(--dark)}
+.err{background:#fff5f5;border:1px solid #f5c6c6;color:var(--red);border-radius:var(--r);padding:10px 14px;font-size:12px;margin-bottom:1rem}
+@media(max-width:900px){.dash{grid-template-columns:1fr}.dside{display:none}.ham{display:block}}
+@media(max-width:600px){.chart-row{grid-template-columns:1fr}.sgrid{grid-template-columns:1fr 1fr}.igrid{grid-template-columns:1fr 1fr}}
+</style>
+<style>
+body{min-height:100vh}
+.page{display:none;min-height:calc(100vh - 64px)}.page.act{display:block}
+.nav-links{display:flex;align-items:center;gap:1.25rem}
+.nav-links a{font-size:11px;font-weight:600;color:var(--gray);text-decoration:none;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:color .2s}
+.nav-links a:hover,.nav-links a.act{color:var(--g)}
+.nav-r{display:flex;align-items:center;gap:8px}
+/* BROWSE */
+.browse-header{background:var(--w);border-bottom:1px solid var(--bdr);padding:.75rem 1.25rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.view-toggle{display:flex;border:1.5px solid var(--bdr);border-radius:var(--r);overflow:hidden}
+.vtbtn{padding:7px 14px;border:none;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;background:var(--w);color:var(--gray)}
+.vtbtn.act{background:var(--g);color:white}
+.filters-row{background:var(--w);border-bottom:1px solid var(--bdr);padding:.6rem 1.25rem;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.filters-row::-webkit-scrollbar{display:none}
+.fpill{padding:6px 14px;border-radius:20px;border:1.5px solid var(--bdr);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;background:var(--w);color:var(--dark)}
+.fpill.act{background:var(--g);color:white;border-color:var(--g)}
+/* LIST */
+.browse-layout{display:grid;grid-template-columns:1fr;gap:0}
+.bags-list{padding:1.25rem}
+.bags-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1rem}
+.bag-card{background:var(--w);border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;cursor:pointer;position:relative}
+.bag-card:hover{transform:translateY(-3px);box-shadow:var(--shl)}
+.bag-img{height:160px;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:52px;position:relative}
+.bag-tag{position:absolute;top:10px;left:10px;background:var(--amber);color:white;font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.8px}
+.bag-avail{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:white;font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px}
+.bag-fav{position:absolute;bottom:10px;right:10px;background:white;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh)}
+.bag-body{padding:.875rem}
+.bag-shop{font-size:9px;font-weight:700;color:var(--g);letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px}
+.bag-name{font-family:var(--serif);font-size:17px;font-weight:600;margin-bottom:2px}
+.bag-loc{font-size:11px;color:var(--gray);margin-bottom:4px}
+.bag-pickup{font-size:10px;color:var(--gray);margin-bottom:.6rem}
+.bag-footer{display:flex;align-items:center;justify-content:space-between}
+.bag-price .now{font-size:16px;font-weight:700;color:var(--g)}
+.bag-price .was{font-size:11px;color:var(--gray);text-decoration:line-through;margin-left:4px}
+.reserve-btn{padding:7px 14px;background:var(--g);color:white;border:none;border-radius:var(--r);font-family:var(--sans);font-size:10px;font-weight:700;cursor:pointer;transition:all .2s}
+.reserve-btn:hover{background:var(--gd)}
+/* MAP */
+#mapView{height:calc(100vh - 160px);display:none}
+/* ORDER CONFIRM */
+.order-confirm{text-align:center;padding:2rem}
+.qr-box{width:140px;height:140px;background:var(--dark);border-radius:var(--r);margin:1rem auto;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-family:monospace;position:relative}
+.qr-inner{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:12px}
+.qr-cell{width:14px;height:14px;border-radius:1px}
+.pickup-code{font-family:monospace;font-size:20px;font-weight:700;letter-spacing:3px;color:var(--g);background:var(--gl);padding:.75rem 1.5rem;border-radius:var(--r);display:inline-block;margin:.75rem 0}
+/* SWIPE CONFIRM */
+.swipe-wrap{position:relative;background:var(--gl);border-radius:30px;height:54px;overflow:hidden;margin:1.5rem 0;cursor:pointer}
+.swipe-track{position:absolute;inset:0;display:flex;align-items:center;padding-left:1rem;font-size:11px;font-weight:700;color:var(--g);letter-spacing:.5px;text-transform:uppercase;user-select:none}
+.swipe-thumb{position:absolute;left:4px;top:4px;width:46px;height:46px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;color:white;font-size:18px;transition:left .3s;cursor:grab}
+.swipe-thumb.swiped{left:calc(100% - 50px)}
+/* PROFILE */
+.profile-wrap{max-width:700px;margin:0 auto;padding:1.5rem}
+.profile-av{width:72px;height:72px;border-radius:50%;background:var(--g);color:white;font-family:var(--serif);font-size:28px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.setting-group{background:var(--w);border-radius:var(--rl);box-shadow:var(--sh);margin-bottom:1rem;overflow:hidden}
+.setting-group-title{padding:.875rem 1.25rem;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--g);background:var(--gl);border-bottom:1px solid var(--bdr)}
+.setting-row{padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);font-size:13px;cursor:pointer;transition:background .15s}
+.setting-row:last-child{border-bottom:none}
+.setting-row:hover{background:var(--lgray)}
+.setting-row .sr-label{font-weight:500}
+.setting-row .sr-value{font-size:12px;color:var(--gray)}
+.toggle-wrap{display:flex;align-items:center;gap:8px}
+.toggle{width:40px;height:22px;border-radius:11px;background:var(--bdr);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--g)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:white;transition:left .2s}
+.toggle.on::after{left:21px}
+/* AUTH */
+.auth-wrap{min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--gl) 0%,var(--w) 60%);padding:2rem}
+.auth-card{background:var(--w);border-radius:var(--rl);padding:2.5rem;width:100%;max-width:420px;box-shadow:var(--shl)}
+.auth-card h2{font-family:var(--serif);font-size:30px;color:var(--g);margin-bottom:.25rem}
+.auth-card p.sub{font-size:12px;color:var(--gray);margin-bottom:1.5rem}
+.rpill{padding:7px 18px;border-radius:20px;border:1.5px solid var(--bdr);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:var(--gray)}
+.rpill.act{border-color:var(--g);background:var(--gl);color:var(--g)}
+.demo-hint{margin-top:1rem;padding:.875rem;background:var(--gl);border-radius:var(--r);font-size:11px;color:var(--gray);line-height:1.8}
+/* ORDERS */
+.order-card{background:var(--w);border-radius:var(--rl);padding:1.25rem;box-shadow:var(--sh);margin-bottom:1rem}
+.order-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem}
+.order-id{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:.5px}
+/* COMMUNITY */
+.comm-card{background:var(--w);border-radius:var(--rl);padding:1.5rem;box-shadow:var(--sh);margin-bottom:1rem;cursor:pointer;transition:all .2s}
+.comm-card:hover{box-shadow:var(--shl)}
+.comm-card h4{font-family:var(--serif);font-size:18px;margin-bottom:.25rem}
+.comm-card p{font-size:12px;color:var(--gray)}
+/* ASSIGN FRIEND */
+.assign-wrap{background:var(--gl);border-radius:var(--r);padding:1rem;margin-top:1rem}
+@media(max-width:768px){
+  .nav-links{display:none;position:absolute;top:64px;left:0;right:0;background:var(--w);border-bottom:1px solid var(--bdr);padding:1rem;flex-direction:column;z-index:300}
+  .nav-links.open{display:flex}
+  .bags-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo" onclick="window.location.href='index.html'"><img src="V3_light_BG.png" alt="KainToGo" onerror="this.style.display='none'"/><span class="logo-text">KAINTOGO</span></div>
+  <div class="nav-links" id="navLinks">
+    <a onclick="showTab('browse')" id="nl-browse" class="act">Browse</a>
+    <a onclick="showTab('favorites')" id="nl-favorites">Favorites</a>
+    <a onclick="showTab('profile')" id="nl-profile">My Orders</a>
+    <a onclick="showTab('account')" id="nl-account">Account</a>
+  </div>
+  <div class="nav-r" id="navR"></div>
+  <button class="ham" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+</nav>
+
+<!-- BROWSE TAB -->
+<div id="p-browse" class="page act">
+  <div class="browse-header">
+    <div class="view-toggle">
+      <button class="vtbtn act" id="vt-list" onclick="setView('list')">☰ List</button>
+      <button class="vtbtn" id="vt-map" onclick="setView('map')">🗺 Map</button>
+    </div>
+    <input class="search-in" id="browseSearch" placeholder="Search shops or meals..." oninput="renderBags()" style="flex:1;min-width:160px"/>
+    <button class="btn btn-p btn-sm" onclick="openMod('filterModal')">⚙ Filter</button>
+  </div>
+  <div class="filters-row" id="catPills"></div>
+  <div id="listView"><div class="bags-list"><div class="bags-grid" id="bagsGrid"></div></div></div>
+  <div id="mapView"><div id="leafletMap" style="height:100%;width:100%"></div></div>
+</div>
+
+<!-- FAVORITES TAB -->
+<div id="p-favorites" class="page">
+  <div style="padding:1.5rem;max-width:900px;margin:0 auto">
+    <h2 style="font-family:var(--serif);font-size:28px;margin-bottom:1.5rem">My <span style="color:var(--g)">Favorites</span></h2>
+    <div class="bags-grid" id="favGrid"></div>
+  </div>
+</div>
+
+<!-- PROFILE / ORDERS TAB -->
+<div id="p-profile" class="page">
+  <div style="padding:1.5rem;max-width:900px;margin:0 auto">
+    <h2 style="font-family:var(--serif);font-size:28px;margin-bottom:1rem">My <span style="color:var(--g)">Rescues</span></h2>
+    <div class="sgrid" id="profileStats" style="margin-bottom:1.5rem"></div>
+    <div class="tabs" id="profileTabs">
+      <div class="tab act" onclick="profileTab('orders')">My Orders</div>
+      <div class="tab" onclick="profileTab('impact')">My Impact</div>
+    </div>
+    <div id="profileTabCon"></div>
+  </div>
+</div>
+
+<!-- ACCOUNT TAB -->
+<div id="p-account" class="page">
+  <div class="profile-wrap">
+    <div class="tabs">
+      <div class="tab act" onclick="accountTab('details')">Account</div>
+      <div class="tab" onclick="accountTab('payment')">Payment</div>
+      <div class="tab" onclick="accountTab('vouchers')">Vouchers</div>
+      <div class="tab" onclick="accountTab('notifications')">Notifications</div>
+      <div class="tab" onclick="accountTab('support')">Support</div>
+      <div class="tab" onclick="accountTab('community')">Community</div>
+    </div>
+    <div id="accountTabCon"></div>
+  </div>
+</div>
+
+<!-- LOGIN PAGE -->
+<div id="p-login" class="page">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Welcome Back</h2>
+      <p class="sub">Sign in to your KainToGo account</p>
+      <div id="loginErr"></div>
+      <div class="fg"><label>Email</label><input type="email" id="lEmail" placeholder="your@email.com"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="lPass" placeholder="••••••••"/></div>
+      <button class="btn btn-p" style="width:100%;padding:12px" onclick="doLogin()">Sign In</button>
+      <div style="text-align:center;margin-top:1rem;font-size:12px;color:var(--gray)">No account? <span style="color:var(--g);cursor:pointer;font-weight:700" onclick="showTab('register')">Join free</span></div>
+      <div class="demo-hint" id="demoHint"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER PAGE -->
+<div id="p-register" class="page">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Join the KainFam</h2>
+      <p class="sub">Create your free account</p>
+      <div id="regErr"></div>
+      <div class="fg"><label>Full Name</label><input id="rName" placeholder="Your name"/></div>
+      <div class="fg"><label>Email</label><input type="email" id="rEmail" placeholder="your@email.com"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="rPass" placeholder="••••••••"/></div>
+      <button class="btn btn-p" style="width:100%;padding:12px" onclick="doRegister()">Create Account</button>
+      <div style="text-align:center;margin-top:1rem;font-size:12px;color:var(--gray)">Already have one? <span style="color:var(--g);cursor:pointer;font-weight:700" onclick="showTab('login')">Sign in</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- BAG DETAIL MODAL -->
+<div class="moverlay" id="bagModal"><div class="modal" id="bagModalBody"></div></div>
+
+<!-- FILTER MODAL -->
+<div class="moverlay" id="filterModal">
+  <div class="modal">
+    <button class="close-x" onclick="closeMod('filterModal')">✕</button>
+    <h3>Filter Bags</h3>
+    <div class="fg"><label>Pickup Day</label>
+      <select id="fDay"><option value="">Any day</option><option value="today">Today</option><option value="tomorrow">Tomorrow</option></select></div>
+    <div class="fg"><label>Pickup Window</label>
+      <select id="fWindow"><option value="">Any time</option>
+        <option>10:00 AM – 12:00 PM</option><option>12:00 PM – 2:00 PM</option>
+        <option>4:00 PM – 6:00 PM</option><option>5:00 PM – 7:00 PM</option>
+        <option>6:00 PM – 8:00 PM</option></select></div>
+    <div class="fg"><label>Bag Type</label>
+      <select id="fType"><option value="">All types</option><option>Meals</option><option>Breads & Pastries</option><option>Groceries</option></select></div>
+    <div class="fg"><label>Dietary</label>
+      <select id="fDiet"><option value="">All</option><option value="vegetarian">Vegetarian</option><option value="vegan">Vegan</option></select></div>
+    <div class="mfoot">
+      <button class="btn btn-o" onclick="clearFilters()">Clear</button>
+      <button class="btn btn-p" onclick="applyFilters()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER CONFIRM MODAL -->
+<div class="moverlay" id="orderModal">
+  <div class="modal" id="orderModalBody"></div>
+</div>
+
+<!-- SWIPE PICKUP MODAL -->
+<div class="moverlay" id="swipeModal">
+  <div class="modal" id="swipeModalBody"></div>
+</div>
+
+<!-- ASSIGN FRIEND MODAL -->
+<div class="moverlay" id="assignModal">
+  <div class="modal">
+    <button class="close-x" onclick="closeMod('assignModal')">✕</button>
+    <h3>Assign Pickup to Friend</h3>
+    <p style="font-size:12px;color:var(--gray);margin-bottom:1rem;line-height:1.7">Enter your friend's KainToGo ID. Once assigned, only they can pick up this order.</p>
+    <div class="fg"><label>Friend's KainToGo ID</label><input id="friendKtgId" placeholder="e.g. KTG-10002"/></div>
+    <div id="assignResult"></div>
+    <div class="mfoot">
+      <button class="btn btn-o" onclick="closeMod('assignModal')">Cancel</button>
+      <button class="btn btn-p" onclick="doAssign()">Assign</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-con" id="toastCon"></div>
+<script>
+
+// ── STATE ──
+let cu = getCurrentUser();
+let bags = kLoad('bags') || seedBags();
+let orders = kLoad('orders') || seedOrders();
+let favorites = kLoad('favs') || ['s1','s3'];
+let activeCat = 'All';
+let activeView = 'list';
+let filters = {};
+let mapInstance = null;
+
+const CATS = ['All','Meals','Breads & Pastries','Groceries'];
+
+// ── NAV ──
+function buildNav(){
+  const r = document.getElementById('navR');
+  if(cu && cu.role === 'customer'){
+    r.innerHTML = `<div class="avatar" onclick="showTab('account')">${cu.avatar}</div>
+      <button class="btn btn-o btn-sm" onclick="doLogout()">Out</button>`;
+  } else {
+    r.innerHTML = `<button class="btn btn-o btn-sm" onclick="showTab('login')">Sign In</button>
+      <button class="btn btn-p btn-sm" onclick="showTab('register')">Join Free</button>`;
+  }
+}
+function showTab(t){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('act'));
+  document.getElementById('p-'+t)?.classList.add('act');
+  document.getElementById('nl-'+t)?.classList.add('act');
+  document.getElementById('navLinks').classList.remove('open');
+  if(t==='browse'){renderBags();renderCats();}
+  if(t==='favorites') renderFavorites();
+  if(t==='profile') renderProfile();
+  if(t==='account'){if(!cu){showTab('login');return;}renderAccountTab('details');}
+  if(t==='login') renderDemoHint();
+  window.scrollTo(0,0);
+}
+
+// ── AUTH ──
+function renderDemoHint(){
+  const el = document.getElementById('demoHint');
+  if(!el) return;
+  const accounts=[
+    {e:'customer'+'@'+'demo.com', p:'Ktg#Demo1', l:'Customer'},
+    {e:'merchant'+'@'+'demo.com', p:'Ktg#Demo2', l:'Merchant → merchant.html'},
+    {e:'hq'+'@'+'demo.com',       p:'Ktg#Demo3', l:'Brand HQ → hq.html'},
+    {e:'partner'+'@'+'demo.com',  p:'Ktg#Demo4', l:'Partner → partner.html'},
+    {e:'admin'+'@'+'demo.com',    p:'Ktg#Demo5', l:'Admin → admin.html'},
+  ];
+  el.innerHTML = '<strong style="color:var(--g);display:block;margin-bottom:8px">🔑 Demo accounts — click to fill:</strong>'
+    + accounts.map(a=>
+        `<div style="margin-bottom:5px">
+          <span style="cursor:pointer;color:var(--g);font-weight:700;text-decoration:underline" onclick="fillDemo('${a.e}')">${a.e}</span>
+          <span style="color:var(--dark)"> / ${a.p}</span>
+          <span style="color:var(--gray);font-size:10px"> → ${a.l}</span>
+        </div>`
+      ).join('');
+}
+function fillDemo(e){
+  document.getElementById('lEmail').value=e;
+  // Demo passwords per account (update these if you change kaintogo-shared.js)
+  const demoPw={
+    ['customer'+'@'+'demo.com']:'Ktg#Demo1',
+    ['merchant'+'@'+'demo.com']:'Ktg#Demo2',
+    ['hq'+'@'+'demo.com']:'Ktg#Demo3',
+    ['partner'+'@'+'demo.com']:'Ktg#Demo4',
+    ['admin'+'@'+'demo.com']:'Ktg#Demo5',
+  };
+  document.getElementById('lPass').value=demoPw[e]||'';
+}
+function doLogin(){
+  const em=document.getElementById('lEmail').value.trim();
+  const pw=document.getElementById('lPass').value;
+  const errEl=document.getElementById('loginErr');
+  if(!em||!pw){errEl.innerHTML='<div class="err">Please enter your email and password.</div>';return;}
+  const u=allUsers().find(x=>x.email===em&&x.password===pw);
+  if(!u){errEl.innerHTML='<div class="err">Wrong email or password. Check the demo credentials below.</div>';return;}
+  setCurrentUser(u);
+  // Non-customer roles: redirect immediately to their dedicated page
+  if(u.role!=='customer'){
+    const pages={merchant:'merchant.html',hq:'hq.html',partner:'partner.html',admin:'admin.html'};
+    window.location.href=pages[u.role]||'index.html';
+    return;
+  }
+  // Customer: stay on this page
+  cu=u; buildNav(); showTab('browse'); toast('Welcome back, '+u.name+'! 👋','s');
+}
+function doRegister(){
+  const name=document.getElementById('rName').value.trim();
+  const email=document.getElementById('rEmail').value.trim();
+  const pw=document.getElementById('rPass').value;
+  if(!name||!email||!pw){document.getElementById('regErr').innerHTML='<div class="err">Please fill all fields.</div>';return;}
+  if(allUsers().find(u=>u.email===email)){document.getElementById('regErr').innerHTML='<div class="err">Email already registered.</div>';return;}
+  const initials=name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  const newU={id:'u'+Date.now(),email,password:pw,name,role:'customer',avatar:initials,ktgId:'KTG-'+Math.floor(10000+Math.random()*90000),phone:'',country:'Philippines',birthday:'',gender:'',diet:'everything',homeAddress:'',workAddress:'',favoriteShops:[],savedBags:0,moneySaved:0,co2Saved:0};
+  const stored=kLoad('users')||[];stored.push(newU);kSave('users',stored);
+  setCurrentUser(newU); cu=newU; buildNav(); showTab('browse');
+  toast('Welcome to KainToGo, '+name+'! 🌿','s');
+}
+function doLogout(){setCurrentUser(null);cu=null;buildNav();showTab('browse');}
+
+// ── BROWSE ──
+function renderCats(){
+  document.getElementById('catPills').innerHTML=CATS.map(c=>`<div class="fpill${c===activeCat?' act':''}" onclick="setCat('${c}')">${c}</div>`).join('');
+}
+function setCat(c){activeCat=c;renderCats();renderBags();}
+function renderBags(){
+  const q=(document.getElementById('browseSearch')?.value||'').toLowerCase();
+  let list=bags.filter(b=>b.active&&b.qtyLeft>0);
+  if(activeCat!=='All') list=list.filter(b=>b.cat===activeCat);
+  if(filters.window) list=list.filter(b=>b.pickup===filters.window);
+  if(filters.type) list=list.filter(b=>b.cat===filters.type);
+  if(filters.diet) list=list.filter(b=>(b.diet||[]).includes(filters.diet));
+  if(q) list=list.filter(b=>b.shop.toLowerCase().includes(q)||b.name.toLowerCase().includes(q));
+  const isFav=id=>favorites.includes(id);
+  document.getElementById('bagsGrid').innerHTML = list.length
+    ? list.map(b=>{
+        const p=pct(b.orig,b.price);
+        return `<div class="bag-card" onclick="openBag('${b.id}')">
+          <div class="bag-img">${b.emoji||'🛍️'}
+            <span class="bag-tag">${p}% off</span>
+            <span class="bag-avail">${b.qtyLeft} left</span>
+            <button class="bag-fav" onclick="event.stopPropagation();toggleFav('${b.shopId}')">${isFav(b.shopId)?'❤️':'🤍'}</button>
+          </div>
+          <div class="bag-body">
+            <div class="bag-shop">${b.shop}</div>
+            <div class="bag-name">${b.name}</div>
+            <div class="bag-loc">📍 ${(SHOPS.find(s=>s.id===b.shopId)||{}).location||''}</div>
+            <div class="bag-pickup">🕐 ${b.pickup}</div>
+            <div class="bag-footer">
+              <div class="bag-price"><span class="now">₱${b.price}</span><span class="was">₱${b.orig}</span></div>
+              <button class="reserve-btn" onclick="event.stopPropagation();quickReserve('${b.id}')">Reserve</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')
+    : '<p style="color:var(--gray);grid-column:1/-1;text-align:center;padding:3rem">No bags available right now. Check back later! 🌱</p>';
+}
+function clearFilters(){filters={};document.getElementById('fDay').value='';document.getElementById('fWindow').value='';document.getElementById('fType').value='';document.getElementById('fDiet').value='';}
+function applyFilters(){filters={window:document.getElementById('fWindow').value,type:document.getElementById('fType').value,diet:document.getElementById('fDiet').value};closeMod('filterModal');renderBags();}
+function toggleFav(shopId){
+  if(favorites.includes(shopId)) favorites=favorites.filter(f=>f!==shopId);
+  else favorites.push(shopId);
+  kSave('favs',favorites);renderBags();
+}
+
+// ── MAP ──
+// MAP: To switch to Google Maps, replace Leaflet init below with google.maps.Map()
+// See comment block in kaintogo-shared.js for full migration instructions.
+function setView(v){
+  activeView=v;
+  document.getElementById('vt-list').classList.toggle('act',v==='list');
+  document.getElementById('vt-map').classList.toggle('act',v==='map');
+  document.getElementById('listView').style.display=v==='list'?'block':'none';
+  document.getElementById('mapView').style.display=v==='map'?'block':'none';
+  if(v==='map') initMap();
+}
+function initMap(){
+  // MAP: Replace this entire function with Google Maps init when API key is available
+  if(mapInstance){mapInstance.invalidateSize();return;}
+  mapInstance=L.map('leafletMap').setView(MAP_CONFIG.center,MAP_CONFIG.zoom);
+  L.tileLayer(MAP_CONFIG.tileUrl,{attribution:MAP_CONFIG.tileAttrib}).addTo(mapInstance);
+  const greenIcon=L.divIcon({html:`<div style="background:#1B4D3E;color:white;border-radius:50% 50% 50% 0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;transform:rotate(-45deg);border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3)"><span style="transform:rotate(45deg)">🛍️</span></div>`,iconSize:[36,36],iconAnchor:[18,36],popupAnchor:[0,-36]});
+  SHOPS.forEach(s=>{
+    const shopBags=bags.filter(b=>b.shopId===s.id&&b.active&&b.qtyLeft>0);
+    if(!shopBags.length) return;
+    const minPrice=Math.min(...shopBags.map(b=>b.price));
+    // MAP: Replace L.marker() with new google.maps.Marker() when migrating
+    L.marker([s.lat,s.lng],{icon:greenIcon}).addTo(mapInstance)
+      .bindPopup(`<div style="font-family:Montserrat,sans-serif;min-width:180px">
+        <div style="font-size:10px;font-weight:700;color:#1B4D3E;letter-spacing:.5px;text-transform:uppercase">${s.name}</div>
+        <div style="font-size:12px;color:#6c757d;margin:.2rem 0">${s.location}</div>
+        <div style="font-size:13px;font-weight:700;color:#1B4D3E">From ₱${minPrice}</div>
+        <div style="font-size:11px;color:#6c757d">${shopBags.length} bag${shopBags.length>1?'s':''} available</div>
+        <button onclick="setView('list')" style="margin-top:.5rem;padding:5px 12px;background:#1B4D3E;color:white;border:none;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif">View Bags</button>
+      </div>`);
+  });
+}
+
+// ── BAG DETAIL ──
+function openBag(id){
+  const b=bags.find(x=>x.id===id); if(!b) return;
+  const p=pct(b.orig,b.price);
+  const co2=(b.kg*IMPACT.co2PerKg).toFixed(2);
+  const water=(b.kg*IMPACT.waterPerKg).toFixed(0);
+  const savings=(b.orig-b.price);
+  document.getElementById('bagModalBody').innerHTML=`
+    <button class="close-x" onclick="closeMod('bagModal')">✕</button>
+    <div style="text-align:center;font-size:64px;margin-bottom:.75rem">${b.emoji}</div>
+    <div style="font-size:10px;font-weight:700;color:var(--g);letter-spacing:1px;margin-bottom:3px">${b.shop} · ${b.cat}</div>
+    <h3 style="margin-bottom:.5rem;font-size:22px">${b.name}</h3>
+    <p style="font-size:12px;color:var(--gray);line-height:1.7;margin-bottom:1rem">${b.desc||'A delightful surprise of today\'s freshest food.'}</p>
+    <div style="background:var(--gl);border-radius:var(--r);padding:.875rem;margin-bottom:1rem">
+      <div style="font-size:10px;font-weight:700;color:var(--g);margin-bottom:.5rem">🌍 YOUR IMPACT PER BAG</div>
+      <div style="display:flex;gap:1.25rem;flex-wrap:wrap">
+        <div><span style="font-weight:700;color:var(--g)">${b.kg}kg</span><span style="font-size:10px;color:var(--gray)"> food rescued</span></div>
+        <div><span style="font-weight:700;color:var(--g)">${co2}kg</span><span style="font-size:10px;color:var(--gray)"> CO₂ prevented</span></div>
+        <div><span style="font-weight:700;color:var(--g)">₱${savings}</span><span style="font-size:10px;color:var(--gray)"> saved</span></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <div><span style="font-size:24px;font-weight:700;color:var(--g)">₱${b.price}</span><span style="font-size:12px;color:var(--gray);text-decoration:line-through;margin-left:6px">₱${b.orig}</span><span style="margin-left:6px;background:var(--amber);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">${p}% OFF</span></div>
+      <span style="font-size:11px;color:var(--gray)">${b.qtyLeft}/${b.qty} left</span>
+    </div>
+    <p style="font-size:11px;color:var(--gray);margin-bottom:1rem">🕐 Pickup: ${b.pickup}</p>
+    <button class="btn btn-p" style="width:100%;padding:12px" onclick="quickReserve('${b.id}');closeMod('bagModal')">Reserve This Bag — ₱${b.price}</button>`;
+  openMod('bagModal');
+}
+
+// ── RESERVE ──
+function quickReserve(id){
+  if(!cu){toast('Sign in to reserve a bag.');showTab('login');return;}
+  const b=bags.find(x=>x.id===id); if(!b||b.qtyLeft<=0){toast('Sold out!','e');return;}
+  b.qtyLeft--;
+  const code='KTG-'+id.slice(0,4).toUpperCase()+'-'+Math.random().toString(36).slice(2,5).toUpperCase();
+  const ord={
+    id:'ORD-'+Date.now().toString(36).toUpperCase(),customerId:cu.id,customerName:cu.name,ktgId:cu.ktgId,
+    shopId:b.shopId,shop:b.shop,bagId:b.id,bagName:b.name,emoji:b.emoji,
+    price:b.price,origPrice:b.orig,kgSaved:b.kg,
+    co2Saved:+(b.kg*IMPACT.co2PerKg).toFixed(2),waterSaved:+(b.kg*IMPACT.waterPerKg).toFixed(0),
+    status:'confirmed',date:today(),pickup:b.pickup,pickupCode:code,assignedFriendId:null
+  };
+  orders.push(ord); kSave('orders',orders); kSave('bags',bags);
+  showOrderConfirm(ord);
+}
+
+function showOrderConfirm(ord){
+  const qr=generateQR();
+  document.getElementById('orderModalBody').innerHTML=`
+    <div class="order-confirm">
+      <div style="font-size:48px">🎉</div>
+      <h3 style="margin:.75rem 0 .25rem">Order Confirmed!</h3>
+      <p style="font-size:12px;color:var(--gray);margin-bottom:1rem">Your bag is reserved. Pick it up on time!</p>
+      <div style="background:var(--gl);border-radius:var(--r);padding:1rem;text-align:left;margin-bottom:1rem">
+        <div style="font-size:11px;font-weight:700;color:var(--g);margin-bottom:.25rem">${ord.shop}</div>
+        <div style="font-size:13px;font-weight:600">${ord.bagName}</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:4px">🕐 ${ord.pickup}</div>
+      </div>
+      <div style="font-size:10px;font-weight:700;color:var(--gray);letter-spacing:.8px;text-transform:uppercase;margin-bottom:.5rem">Your Pickup Code</div>
+      <div class="pickup-code">${ord.pickupCode}</div>
+      <div class="qr-box">${qr}</div>
+      <div style="font-size:10px;color:var(--gray);margin-bottom:1.5rem">📧 A confirmation has been sent to your email</div>
+      <div style="background:var(--lgray);border-radius:var(--r);padding:.875rem;margin-bottom:1rem;text-align:left">
+        <div style="font-size:11px;font-weight:700;color:var(--dark);margin-bottom:.4rem">Need someone else to pick up?</div>
+        <button class="btn btn-o btn-sm" onclick="closeMod('orderModal');openAssign('${ord.id}')">Assign to a friend</button>
+      </div>
+      <button class="btn btn-p btn-sm" onclick="closeMod('orderModal');showTab('profile')">View My Orders</button>
+      <button class="btn btn-o btn-sm" style="margin-left:8px" onclick="closeMod('orderModal')">Continue Browsing</button>
+    </div>`;
+  openMod('orderModal');
+}
+
+function generateQR(){
+  // Generates a visual fake QR code pattern for demo purposes
+  const cells=Array.from({length:49},()=>Math.random()>0.45?1:0);
+  // Force corner squares for authentic QR look
+  [[0,1,2,7,8,9,14,15,16],[34,35,36,41,42,43,48,49,50]].forEach(()=>{});
+  return `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+    ${cells.map((v,i)=>`<rect x="${(i%7)*14+2}" y="${Math.floor(i/7)*14+2}" width="12" height="12" fill="${v?'white':'transparent'}" rx="1"/>`).join('')}
+    <rect x="2" y="2" width="40" height="40" fill="none" stroke="white" stroke-width="3"/>
+    <rect x="58" y="2" width="40" height="40" fill="none" stroke="white" stroke-width="3"/>
+    <rect x="2" y="58" width="40" height="40" fill="none" stroke="white" stroke-width="3"/>
+  </svg>`;
+}
+
+// ── SWIPE TO CONFIRM PICKUP ──
+function openSwipePickup(orderId){
+  const ord=orders.find(o=>o.id===orderId); if(!ord) return;
+  document.getElementById('swipeModalBody').innerHTML=`
+    <button class="close-x" onclick="closeMod('swipeModal')">✕</button>
+    <h3>Confirm Pickup</h3>
+    <p style="font-size:12px;color:var(--gray);margin-bottom:.5rem">Show this screen to the merchant and swipe to confirm your pickup.</p>
+    <div style="background:var(--gl);border-radius:var(--r);padding:.875rem;margin-bottom:1rem">
+      <div style="font-weight:600;font-size:13px">${ord.bagName}</div>
+      <div style="font-size:11px;color:var(--gray)">${ord.shop} · ${ord.pickup}</div>
+      <div style="font-family:monospace;font-size:16px;font-weight:700;color:var(--g);margin-top:.5rem">${ord.pickupCode}</div>
+    </div>
+    <div class="swipe-wrap" id="swipeCtrl" onclick="startSwipe('${orderId}')">
+      <div class="swipe-track">→ Swipe right to confirm pickup</div>
+      <div class="swipe-thumb" id="swipeThumb">👆</div>
+    </div>
+    <p style="font-size:10px;color:var(--gray);text-align:center">Only you (the customer) can confirm this pickup.</p>`;
+  openMod('swipeModal');
+}
+
+function startSwipe(orderId){
+  const thumb=document.getElementById('swipeThumb');
+  if(!thumb) return;
+  thumb.classList.add('swiped');
+  setTimeout(()=>{
+    document.getElementById('swipeModalBody').innerHTML=`
+      <div style="text-align:center;padding:1.5rem">
+        <div style="font-size:48px;margin-bottom:1rem">✅</div>
+        <h3>Are you confirming the pick-up?</h3>
+        <p style="font-size:12px;color:var(--gray);margin:1rem 0">This will mark your order as collected and notify the merchant.</p>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:1rem">
+          <button class="btn btn-o" onclick="closeMod('swipeModal')">Cancel</button>
+          <button class="btn btn-p" onclick="confirmPickup('${orderId}')">Confirm</button>
+        </div>
+      </div>`;
+  },600);
+}
+
+function confirmPickup(orderId){
+  const ord=orders.find(o=>o.id===orderId); if(!ord) return;
+  ord.status='completed'; kSave('orders',orders);
+  closeMod('swipeModal'); toast('Pickup confirmed! Enjoy your meal 🎉','s');
+  renderProfile();
+}
+
+// ── ASSIGN FRIEND ──
+function openAssign(orderId){
+  document.getElementById('friendKtgId').value='';
+  document.getElementById('assignResult').innerHTML='';
+  document.getElementById('assignModal').dataset.orderId=orderId;
+  openMod('assignModal');
+}
+function doAssign(){
+  const ktgId=document.getElementById('friendKtgId').value.trim().toUpperCase();
+  const orderId=document.getElementById('assignModal').dataset.orderId;
+  const friend=allUsers().find(u=>u.ktgId===ktgId);
+  if(!friend){document.getElementById('assignResult').innerHTML='<div class="err">Wrong KainToGo ID. Please check and try again.</div>';return;}
+  if(friend.id===cu.id){document.getElementById('assignResult').innerHTML='<div class="err">You cannot assign to yourself.</div>';return;}
+  const ord=orders.find(o=>o.id===orderId);
+  if(ord){ord.assignedFriendId=friend.id;ord.assignedFriendName=friend.name;kSave('orders',orders);}
+  closeMod('assignModal');
+  toast(`Pickup assigned to ${friend.name}. They can now pick up your order.`,'s');
+}
+
+// ── FAVORITES ──
+function renderFavorites(){
+  const favBags=bags.filter(b=>favorites.includes(b.shopId)&&b.active&&b.qtyLeft>0);
+  document.getElementById('favGrid').innerHTML=favBags.length
+    ? favBags.map(b=>{const p=pct(b.orig,b.price);return `<div class="bag-card" onclick="openBag('${b.id}')">
+        <div class="bag-img">${b.emoji}<span class="bag-tag">${p}% off</span><span class="bag-avail">${b.qtyLeft} left</span></div>
+        <div class="bag-body"><div class="bag-shop">${b.shop}</div><div class="bag-name">${b.name}</div>
+          <div class="bag-pickup">🕐 ${b.pickup}</div>
+          <div class="bag-footer"><div class="bag-price"><span class="now">₱${b.price}</span><span class="was">₱${b.orig}</span></div>
+            <button class="reserve-btn" onclick="event.stopPropagation();quickReserve('${b.id}')">Reserve</button></div>
+        </div></div>`;}).join('')
+    : '<p style="color:var(--gray);grid-column:1/-1;text-align:center;padding:3rem">No favorite shops with available bags today.<br/>Heart a shop to add it here! 🤍</p>';
+}
+
+// ── PROFILE / ORDERS ──
+function renderProfile(){
+  const mine=orders.filter(o=>o.customerId===cu?.id||[]);
+  const totalSaved=mine.reduce((a,o)=>a+(o.origPrice||0)-o.price,0);
+  const co2Total=mine.filter(o=>o.status==='completed').reduce((a,o)=>a+o.co2Saved,0);
+  document.getElementById('profileStats').innerHTML=`
+    <div class="scard"><div class="slbl">Bags Rescued</div><div class="sval">${mine.length}</div></div>
+    <div class="scard"><div class="slbl">Money Saved</div><div class="sval">₱${totalSaved.toLocaleString()}</div></div>
+    <div class="scard"><div class="slbl">CO₂ Prevented</div><div class="sval">${co2Total.toFixed(1)}<span style="font-size:14px">kg</span></div></div>
+    <div class="scard"><div class="slbl">Fave Shops</div><div class="sval">${favorites.length}</div></div>`;
+  profileTab('orders');
+}
+let _ptab='orders';
+function profileTab(t){
+  _ptab=t;
+  document.querySelectorAll('#profileTabs .tab').forEach((el,i)=>{el.classList.toggle('act',['orders','impact'][i]===t);});
+  const mine=orders.filter(o=>o.customerId===cu?.id).slice().reverse();
+  if(t==='orders'){
+    document.getElementById('profileTabCon').innerHTML=mine.length?mine.map(o=>`
+      <div class="order-card">
+        <div class="order-hd">
+          <div><div class="order-id">${o.id}</div>
+            <div style="font-family:var(--serif);font-size:16px;font-weight:600;margin-top:2px">${o.bagName}</div>
+            <div style="font-size:11px;color:var(--gray);margin-top:2px">${o.shop} · ${o.date} · ${o.pickup}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:16px;font-weight:700;color:var(--g)">₱${o.price}</div>
+            <span class="badge ${o.status==='completed'?'b-green':o.status==='confirmed'?'b-blue':'b-amber'}">${o.status}</span>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--gray);margin-top:.4rem">Pickup code: <code style="font-weight:700;color:var(--dark)">${o.pickupCode}</code></div>
+        ${o.assignedFriendId?`<div style="font-size:11px;color:var(--amber);margin-top:4px">👤 Assigned to: ${o.assignedFriendName}</div>`:''}
+        <div style="display:flex;gap:8px;margin-top:.75rem;flex-wrap:wrap">
+          ${o.status==='confirmed'?`<button class="btn btn-p btn-sm" onclick="openSwipePickup('${o.id}')">Swipe to Confirm Pickup</button>
+            <button class="btn btn-o btn-sm" onclick="openAssign('${o.id}')">Assign Friend</button>`:''}
+        </div>
+      </div>`).join('')
+    :'<p style="color:var(--gray);text-align:center;padding:3rem">No orders yet. <span style="color:var(--g);cursor:pointer;font-weight:700" onclick="showTab(\'browse\')">Find a deal →</span></p>';
+  } else {
+    const co2=mine.filter(o=>o.status==='completed').reduce((a,o)=>a+o.co2Saved,0);
+    const kg=mine.filter(o=>o.status==='completed').reduce((a,o)=>a+o.kgSaved,0);
+    const saved=mine.reduce((a,o)=>a+(o.origPrice||0)-o.price,0);
+    document.getElementById('profileTabCon').innerHTML=`
+      <div class="igrid">
+        <div class="icard"><div class="ico2">💸</div><div class="ilbl">Money Saved</div><div class="ival">₱${saved.toLocaleString()}</div></div>
+        <div class="icard"><div class="ico2">🥗</div><div class="ilbl">Food Rescued</div><div class="ival">${kg.toFixed(1)}</div><div class="iunit">kg</div></div>
+        <div class="icard"><div class="ico2">🌫️</div><div class="ilbl">CO₂ Prevented</div><div class="ival">${co2.toFixed(1)}</div><div class="iunit">kg</div></div>
+      </div>`;
+  }
+}
+
+// ── ACCOUNT TABS ──
+function renderAccountTab(t){document.querySelectorAll('#p-account .tab').forEach((el,i)=>{el.classList.toggle('act',['details','payment','vouchers','notifications','support','community'][i]===t);});accountTab(t);}
+function accountTab(t){
+  renderAccountTab(t);
+  const el=document.getElementById('accountTabCon');
+  if(!cu){el.innerHTML='<p style="color:var(--gray);padding:2rem;text-align:center">Please sign in.</p>';return;}
+  if(t==='details') el.innerHTML=`
+    <div class="setting-group"><div class="setting-group-title">Personal Info</div>
+      <div style="padding:1.25rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label>Full Name</label><input value="${cu.name}" id="acName"/></div>
+          <div class="fg"><label>Email</label><input value="${cu.email}" id="acEmail"/></div>
+          <div class="fg"><label>Phone</label><input value="${cu.phone||''}" id="acPhone" placeholder="+63 9XX XXX XXXX"/></div>
+          <div class="fg"><label>Country</label><input value="${cu.country||'Philippines'}" id="acCountry"/></div>
+          <div class="fg"><label>Birthday</label><input type="date" value="${cu.birthday||''}" id="acBday"/></div>
+          <div class="fg"><label>Gender</label><select id="acGender"><option value="">Prefer not to say</option><option value="male" ${cu.gender==='male'?'selected':''}>Male</option><option value="female" ${cu.gender==='female'?'selected':''}>Female</option><option value="other" ${cu.gender==='other'?'selected':''}>Other</option></select></div>
+        </div>
+        <div class="fg"><label>Dietary Preference</label><select id="acDiet"><option value="everything" ${cu.diet==='everything'?'selected':''}>I eat everything</option><option value="vegetarian" ${cu.diet==='vegetarian'?'selected':''}>Vegetarian</option><option value="vegan" ${cu.diet==='vegan'?'selected':''}>Vegan</option><option value="">Not specified</option></select></div>
+        <div class="fg"><label>Home Address</label><input value="${cu.homeAddress||''}" id="acHome" placeholder="Home address"/></div>
+        <div class="fg"><label>Work Address</label><input value="${cu.workAddress||''}" id="acWork" placeholder="Work address"/></div>
+        <button class="btn btn-p btn-sm" onclick="saveDetails()">Save Changes</button>
+      </div>
+    </div>
+    <div class="setting-group"><div class="setting-group-title">KainToGo ID</div>
+      <div class="setting-row"><span class="sr-label">Your KTG ID</span><code style="font-weight:700;color:var(--g)">${cu.ktgId||'KTG-'+cu.id.slice(-5).toUpperCase()}</code></div>
+    </div>`;
+  else if(t==='payment') el.innerHTML=`
+    <div class="setting-group"><div class="setting-group-title">Payment Methods</div>
+      <div class="setting-row" onclick="toast('GCash linking — connect to backend')"><span class="sr-label">💚 GCash</span><span class="sr-value">Link account →</span></div>
+      <div class="setting-row" onclick="toast('Maya linking — connect to backend')"><span class="sr-label">💜 Maya (PayMaya)</span><span class="sr-value">Link account →</span></div>
+      <div class="setting-row" onclick="toast('Bank card — connect to backend')"><span class="sr-label">💳 Bank Card</span><span class="sr-value">Add card →</span></div>
+    </div>`;
+  else if(t==='vouchers') el.innerHTML=`
+    <div class="setting-group"><div class="setting-group-title">My Vouchers</div>
+      <div class="setting-row"><span class="sr-label">No active vouchers</span><span class="sr-value">Invite friends to earn ₱50</span></div>
+    </div>`;
+  else if(t==='notifications') el.innerHTML=buildNotifTab();
+  else if(t==='support') el.innerHTML=`
+    <div class="setting-group"><div class="setting-group-title">Customer Support</div>
+      <div class="setting-row" onclick="window.open('https://facebook.com/kaintogoph','_blank')"><span class="sr-label">💬 Chat on Facebook</span><span class="sr-value">@kaintogoph →</span></div>
+      <div class="setting-row" onclick="toast('FAQ page — add a link')"><span class="sr-label">❓ FAQ</span><span class="sr-value">View →</span></div>
+    </div>`;
+  else if(t==='community') el.innerHTML=buildCommunityTab();
+}
+
+function saveDetails(){
+  cu.name=document.getElementById('acName').value;
+  cu.email=document.getElementById('acEmail').value;
+  cu.phone=document.getElementById('acPhone').value;
+  cu.country=document.getElementById('acCountry').value;
+  cu.birthday=document.getElementById('acBday').value;
+  cu.gender=document.getElementById('acGender').value;
+  cu.diet=document.getElementById('acDiet').value;
+  cu.homeAddress=document.getElementById('acHome').value;
+  cu.workAddress=document.getElementById('acWork').value;
+  setCurrentUser(cu); toast('Account updated! ✅','s');
+}
+
+function buildNotifTab(){
+  const n=cu.notifications||{newStores:true,calReminder:true,push:true,important:true,announcements:true,bagAlerts:true};
+  const rows=[
+    ['email','newStores','📧 New Stores & Tips','Be the 1st to learn about new stores, great tips, updates, and even a food pun or two.'],
+    ['calendar','calReminder','📅 Calendar Reminders','Get a calendar reminder before the pickup window opens.'],
+    ['push','push','📱 Push Notifications','Get notified about availability, feature updates, promotions, and more.'],
+    ['important','important','🔔 Important Updates','Receive updates related to your order and other essential notifications. Recommended for a seamless experience.'],
+    ['announce','announcements','📣 Announcements & Promos','Be the first to hear about new stores, competitions, and promotions in your area.'],
+    ['bag','bagAlerts','🛍️ Surprise Bag Alerts','Receive personalized Surprise Bag recommendations and alerts.'],
+  ];
+  return `<div class="setting-group"><div class="setting-group-title">Notification Preferences</div>
+    ${rows.map(([id,key,label,desc])=>`
+      <div class="setting-row" onclick="toggleNotif('${key}')">
+        <div><div class="sr-label">${label}</div><div style="font-size:11px;color:var(--gray);margin-top:2px;max-width:280px">${desc}</div></div>
+        <div class="toggle ${n[key]!==false?'on':''}" id="nt-${key}"></div>
+      </div>`).join('')}
+    </div>
+    <p style="font-size:10px;color:var(--gray);padding:.75rem 1.25rem">Notifications are governed by the Data Privacy Act of 2012 (Republic Act 10173) and the National Telecommunications Commission (NTC) regulations. You may opt out at any time.</p>`;
+}
+
+function toggleNotif(key){
+  if(!cu.notifications) cu.notifications={newStores:true,calReminder:true,push:true,important:true,announcements:true,bagAlerts:true};
+  cu.notifications[key]=!cu.notifications[key];
+  const el=document.getElementById('nt-'+key);
+  if(el) el.classList.toggle('on',cu.notifications[key]);
+  setCurrentUser(cu); toast('Notification preference saved.');
+}
+
+function buildCommunityTab(){
+  return `
+    <div class="comm-card" onclick="showInvite()"><div style="font-size:28px;margin-bottom:.5rem">🎁</div><h4>Invite a Friend — Earn ₱50</h4><p>Invite friends and earn ₱50 for every 1st Surprise Bag they save.</p><div style="margin-top:.75rem"><span class="btn btn-p btn-sm">Invite Now</span></div></div>
+    <div class="comm-card" onclick="showRecommendStore()"><div style="font-size:28px;margin-bottom:.5rem">📍</div><h4>Recommend a Store</h4><p>Know a food business perfect for KainToGo? Tell us more about it.</p><div style="margin-top:.75rem"><span class="btn btn-o btn-sm">Recommend</span></div></div>
+    <div class="comm-card" onclick="showSignUpBusiness()"><div style="font-size:28px;margin-bottom:.5rem">🏪</div><h4>Sign Up Your Food Business</h4><p>Register your business and start rescuing food today.</p><div style="margin-top:.75rem"><span class="btn btn-o btn-sm">Register Business</span></div></div>
+    <div class="comm-card" style="background:var(--g);color:white" onclick="doLogout()"><h4 style="color:white">Log Out</h4><p style="color:rgba(255,255,255,.8)">Sign out of your KainToGo account.</p></div>`;
+}
+
+function showInvite(){
+  document.getElementById('accountTabCon').innerHTML=`
+    <button class="btn btn-o btn-sm" onclick="accountTab('community')" style="margin-bottom:1rem">← Back</button>
+    <div class="setting-group"><div class="setting-group-title">Invite a Friend — Earn ₱50</div>
+      <div style="padding:1.25rem">
+        <p style="font-size:13px;color:var(--gray);line-height:1.7;margin-bottom:1.25rem">Invite your friends who haven't saved a Surprise Bag yet and earn ₱50 for every 1st bag they save!</p>
+        <div style="background:var(--gl);border-radius:var(--r);padding:1rem;margin-bottom:1rem">
+          <div style="font-size:10px;font-weight:700;color:var(--g);margin-bottom:.75rem;letter-spacing:.5px">YOUR UNIQUE LINK</div>
+          <code style="font-size:13px;color:var(--dark)">kaintogo.com/ref/${cu.ktgId||'KTG-XXXXX'}</code>
+          <button class="btn btn-sm btn-o" style="margin-left:10px" onclick="toast('Link copied!','s')">Copy</button>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:.75rem">How it works:</div>
+        ${[['👤','New app users only','Invite friends who have never saved a Surprise Bag.'],['🔗','Share your unique link','This only works if your friends use your unique invitation link.'],['🔔','Get notified','Turn on push notifications to know when you earn a voucher.'],['⏰','Use within 21 days','Vouchers expire 21 days after they are issued.']].map(([ico,t,d])=>`<div style="display:flex;gap:12px;margin-bottom:.875rem"><span style="font-size:20px">${ico}</span><div><div style="font-size:12px;font-weight:600">${t}</div><div style="font-size:11px;color:var(--gray);line-height:1.5">${d}</div></div></div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function showRecommendStore(){
+  document.getElementById('accountTabCon').innerHTML=`
+    <button class="btn btn-o btn-sm" onclick="accountTab('community')" style="margin-bottom:1rem">← Back</button>
+    <div class="setting-group"><div class="setting-group-title">Recommend a Store</div>
+      <div style="padding:1.25rem">
+        <div class="fg"><label>Search Store</label><input id="recSearch" placeholder="Search for a store name..." oninput="filterRecStores()"/></div>
+        <div style="font-size:12px;color:var(--gray);margin-bottom:1rem">You know a food business which would be perfect for KainToGo? Tell us more about it.</div>
+        <div id="recResults"></div>
+        <div class="fg" style="margin-top:1rem"><label>Or describe a new business</label><textarea placeholder="Business name, location, type of food..."></textarea></div>
+        <button class="btn btn-p btn-sm" onclick="toast('Recommendation sent! Thank you 🙏','s')">Send Recommendation</button>
+      </div>
+    </div>`;
+}
+
+function filterRecStores(){
+  const q=document.getElementById('recSearch')?.value.toLowerCase();
+  const res=SHOPS.filter(s=>s.name.toLowerCase().includes(q));
+  document.getElementById('recResults').innerHTML=res.map(s=>`<div style="padding:.5rem;border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:6px;font-size:12px"><strong>${s.name}</strong> — ${s.location}</div>`).join('');
+}
+
+function showSignUpBusiness(){
+  document.getElementById('accountTabCon').innerHTML=`
+    <button class="btn btn-o btn-sm" onclick="accountTab('community')" style="margin-bottom:1rem">← Back</button>
+    <div class="setting-group"><div class="setting-group-title">Sign Up Your Food Business</div>
+      <div style="padding:1.25rem">
+        <p style="font-size:13px;color:var(--gray);margin-bottom:1rem">Identify your business and let's start your registration. This will only take a few minutes!</p>
+        <input class="search-in" style="width:100%;margin-bottom:.75rem" placeholder="Search your business name..."/>
+        <div class="fg"><label>Business Name</label><input placeholder="e.g. Mama's Kitchen"/></div>
+        <div class="fg"><label>Business Type</label><select><option>Restaurant</option><option>Bakery</option><option>Cafe</option><option>Grocery</option><option>Other</option></select></div>
+        <div class="fg"><label>Location / Address</label><input placeholder="Full address"/></div>
+        <button class="btn btn-p btn-sm" onclick="toast('Registration request sent! We will be in touch.','s')">Start Registration</button>
+      </div>
+    </div>`;
+}
+
+// ── INIT ──
+buildNav();
+renderCats();
+renderBags();
+if(window.location.hash==='#register') showTab('register');
+</script>
+</body></html>

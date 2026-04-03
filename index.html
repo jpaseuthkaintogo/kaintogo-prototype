@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>KainToGo — Save Money. Rescue Food.</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="kaintogo-shared.js"></script>
+<style id="sharedStyle"></style>
+<style>
+.page{display:none;min-height:calc(100vh - 64px)}.page.act{display:block}
+.nav-links{display:flex;align-items:center;gap:1.5rem}
+.nav-links a{font-size:11px;font-weight:600;color:var(--gray);text-decoration:none;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:color .2s}
+.nav-links a:hover,.nav-links a.act{color:var(--g)}
+.nav-r{display:flex;align-items:center;gap:8px}
+/* HERO */
+.hero{background:var(--g);color:white;padding:5rem 2rem 3rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;border-radius:50%;background:rgba(255,255,255,.04)}
+.hero::after{content:'';position:absolute;bottom:-60px;left:-40px;width:250px;height:250px;border-radius:50%;background:rgba(255,255,255,.04)}
+.hero-inner{max-width:700px;margin:0 auto;text-align:center;position:relative}
+.hero-award{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;display:inline-flex;align-items:center;gap:8px;padding:8px 18px;font-size:11px;font-weight:600;letter-spacing:.5px;margin-bottom:1.5rem;color:rgba(255,255,255,.9)}
+.hero h1{font-family:var(--serif);font-size:clamp(38px,6vw,70px);font-weight:300;line-height:1.1;margin-bottom:1rem}
+.hero h1 em{font-style:italic;font-weight:600}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.8);margin-bottom:.75rem;line-height:1.7}
+.hero-price{font-size:13px;color:rgba(255,255,255,.9);margin-bottom:2rem;font-weight:600}
+.hero-price .price-orig{text-decoration:line-through;color:rgba(255,255,255,.5);font-weight:400}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem}
+.hero-stats{display:flex;gap:3rem;justify-content:center;padding:1.5rem 0;border-top:1px solid rgba(255,255,255,.15);flex-wrap:wrap;gap:2rem}
+.hstat-val{font-family:var(--serif);font-size:32px;font-weight:600}
+.hstat-lbl{font-size:10px;color:rgba(255,255,255,.7);letter-spacing:.8px;text-transform:uppercase;margin-top:2px}
+.hero-pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1rem}
+.hero-pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);padding:5px 14px;border-radius:20px;font-size:11px;font-weight:500}
+.hero-disclaimer{font-size:10px;color:rgba(255,255,255,.5);margin-top:.75rem;font-style:italic}
+/* HOW IT WORKS */
+.sec{padding:3rem 2rem;max-width:1100px;margin:0 auto}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--g);text-transform:uppercase;margin-bottom:.5rem}
+.sec-title{font-family:var(--serif);font-size:clamp(28px,4vw,42px);margin-bottom:.5rem}
+.sec-sub{font-size:13px;color:var(--gray);line-height:1.7;margin-bottom:2rem;max-width:500px}
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem}
+.step-card{text-align:center;padding:1.5rem}
+.step-num{width:40px;height:40px;border-radius:50%;background:var(--gl);color:var(--g);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem}
+.step-ico{font-size:36px;margin-bottom:.75rem}
+.step-title{font-family:var(--serif);font-size:18px;margin-bottom:.4rem}
+.step-desc{font-size:12px;color:var(--gray);line-height:1.6}
+/* VALUE PROP */
+.vp-section{background:var(--gl);padding:3rem 2rem}
+.vp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;max-width:1000px;margin:0 auto}
+.vp-card{background:white;border-radius:var(--rl);padding:1.5rem;box-shadow:var(--sh)}
+.vp-ico{font-size:32px;margin-bottom:.75rem}
+.vp-title{font-family:var(--serif);font-size:18px;margin-bottom:.5rem}
+.vp-desc{font-size:12px;color:var(--gray);line-height:1.7}
+/* MANIFESTO */
+.manifesto{background:var(--g);color:white;padding:4rem 2rem;text-align:center}
+.manifesto h2{font-family:var(--serif);font-size:clamp(28px,4vw,48px);margin-bottom:.75rem;font-weight:300}
+.manifesto h2 em{font-style:italic;font-weight:600}
+.manifesto p{font-size:13px;color:rgba(255,255,255,.8);max-width:480px;margin:0 auto 1.5rem;line-height:1.8}
+/* CTA */
+.cta-strip{background:var(--dark);color:white;padding:3rem 2rem;text-align:center}
+.cta-strip h2{font-family:var(--serif);font-size:clamp(24px,3vw,38px);margin-bottom:.5rem}
+.cta-strip p{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:1.5rem}
+/* ABOUT */
+.about-hero{background:var(--g);color:white;padding:4rem 2rem;text-align:center}
+.about-hero h1{font-family:var(--serif);font-size:clamp(30px,5vw,60px);font-weight:300;margin-bottom:.75rem}
+.about-hero h1 em{font-style:italic;font-weight:600}
+.about-hero p{font-size:14px;color:rgba(255,255,255,.8);max-width:520px;margin:0 auto;line-height:1.8}
+.founders-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;margin:2rem 0}
+.founder-card{background:var(--w);border-radius:var(--rl);padding:1.5rem;box-shadow:var(--sh);text-align:center}
+.founder-av{width:72px;height:72px;border-radius:50%;background:var(--g);color:white;font-family:var(--serif);font-size:28px;font-weight:600;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.founder-name{font-family:var(--serif);font-size:20px;margin-bottom:2px}
+.founder-role{font-size:11px;color:var(--g);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:.75rem}
+.founder-quote{font-size:12px;color:var(--gray);line-height:1.7;font-style:italic}
+/* KNOWLEDGE */
+.kb-hero{background:var(--g);color:white;padding:4rem 2rem;text-align:center}
+.kb-hero h1{font-family:var(--serif);font-size:clamp(28px,5vw,56px);font-weight:300;margin-bottom:.75rem}
+.kb-hero h1 em{font-style:italic;font-weight:600}
+.facts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin:2rem 0}
+.fact-card{background:white;border-radius:var(--rl);padding:1.5rem;box-shadow:var(--sh);text-align:center}
+.fact-num{font-family:var(--serif);font-size:48px;font-weight:600;color:var(--g);line-height:1}
+.fact-lbl{font-size:11px;font-weight:700;color:var(--gray);letter-spacing:.5px;text-transform:uppercase;margin:.5rem 0}
+.fact-desc{font-size:12px;color:var(--gray);line-height:1.6}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1.5rem 0}
+.res-card{background:white;border-radius:var(--rl);padding:1.25rem;box-shadow:var(--sh);display:flex;align-items:flex-start;gap:12px}
+.res-type{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:.5rem;display:inline-block}
+.res-name{font-size:14px;font-weight:600;color:var(--dark)}
+.res-org{font-size:11px;color:var(--gray);margin-top:2px}
+/* FOOTER */
+footer{background:var(--gd);color:white;padding:2rem;text-align:center}
+footer .logo-text{display:block;margin-bottom:.5rem}
+footer p{font-size:11px;color:rgba(255,255,255,.5)}
+footer nav2{display:flex;gap:1.5rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap}
+footer a{font-size:11px;color:rgba(255,255,255,.6);text-decoration:none;cursor:pointer}
+footer a:hover{color:white}
+@media(max-width:768px){
+  .nav-links{display:none;position:absolute;top:64px;left:0;right:0;background:var(--w);border-bottom:1px solid var(--bdr);padding:1rem;flex-direction:column;z-index:300}
+  .nav-links.open{display:flex}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo" onclick="go('home')"><img src="V3_light_BG.png" alt="KainToGo" onerror="this.style.display='none'"/><span class="logo-text">KAINTOGO</span></div>
+  <div class="nav-links" id="navLinks">
+    <a onclick="go('home')" id="nl-home" class="act">Home</a>
+    <a onclick="go('about')" id="nl-about">About</a>
+    <a onclick="go('knowledge')" id="nl-knowledge">Food Waste</a>
+    <a href="customer.html">Browse Deals</a>
+  </div>
+  <div class="nav-r">
+    <div id="navGuest"><button class="btn btn-o btn-sm" onclick="window.location.href='customer.html'">Sign In</button><button class="btn btn-p btn-sm" style="margin-left:6px" onclick="window.location.href='customer.html#register'">Join Free</button></div>
+    <button class="ham" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="p-home" class="page act">
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-award">🏆 Salute to Lance Ocab! — Awarded 3 Months of FREE Sustainable Rescues!</div>
+      <h1>Save up to 70%<br/>on meals <em>near you</em></h1>
+      <p class="hero-sub">Find unsold meals from local shops at lower prices before they're gone.<br/>Save money. Reduce food waste.</p>
+      <p class="hero-price">Meals from <strong>₱79</strong> &nbsp;<span class="price-orig">₱250</span></p>
+      <div class="hero-btns">
+        <button class="btn btn-w" onclick="window.location.href='customer.html'">See deals near you</button>
+        <button class="btn btn-ghost" onclick="scrollToHow()">How it works</button>
+      </div>
+      <div class="hero-stats">
+        <div><div class="hstat-val">12,406kg</div><div class="hstat-lbl">CO₂ Prevented</div></div>
+        <div><div class="hstat-val">8,503</div><div class="hstat-lbl">Meals Rescued</div></div>
+      </div>
+      <div class="hero-pills">
+        <span class="hero-pill">✓ Quality food from trusted local shops</span>
+        <span class="hero-pill">✓ Pick-up times you can rely on</span>
+        <span class="hero-pill">✓ Limited deals updated daily</span>
+      </div>
+      <p class="hero-disclaimer">Meals may vary depending on the shop's daily surplus</p>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div style="background:var(--w);padding:3rem 2rem" id="howItWorks">
+    <div style="max-width:1000px;margin:0 auto;text-align:center">
+      <div class="sec-label">How it works</div>
+      <h2 class="sec-title">Three steps to save</h2>
+      <div class="steps-grid" style="margin-top:2rem">
+        <div class="step-card"><div class="step-ico">🗺️</div><div class="step-num">1</div><div class="step-title">Find deals near you</div><p class="step-desc">See available meals from shops around you.</p></div>
+        <div class="step-card"><div class="step-ico">⚡</div><div class="step-num">2</div><div class="step-title">Reserve in seconds</div><p class="step-desc">Pick a deal and secure it instantly.</p></div>
+        <div class="step-card"><div class="step-ico">🛍️</div><div class="step-num">3</div><div class="step-title">Pick up your meal</div><p class="step-desc">Collect it at the scheduled time and enjoy.</p></div>
+      </div>
+      <div style="margin-top:2rem"><button class="btn btn-p" onclick="window.location.href='customer.html'">See deals near you</button></div>
+    </div>
+  </div>
+
+  <!-- VALUE PROP -->
+  <div class="vp-section">
+    <div style="max-width:1000px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:2rem">
+        <div class="sec-label">Value Proposition</div>
+        <h2 class="sec-title">Why KainToGo?</h2>
+      </div>
+      <div class="vp-grid">
+        <div class="vp-card"><div class="vp-ico">💸</div><h4 class="vp-title">Up to 70% off meals</h4><p class="vp-desc">Shops sell their unsold food at lower prices instead of wasting it.</p></div>
+        <div class="vp-card"><div class="vp-ico">⏰</div><h4 class="vp-title">Limited daily deals</h4><p class="vp-desc">New meals every day — once they're gone, they're gone.</p></div>
+        <div class="vp-card"><div class="vp-ico">🤝</div><h4 class="vp-title">Win-win system</h4><p class="vp-desc">You save money, shops recover revenue, food doesn't go to waste.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANIFESTO -->
+  <div class="manifesto">
+    <div class="sec-label" style="color:rgba(255,255,255,.6)">Manifesto</div>
+    <h2>The KainToGo <em>vision</em></h2>
+    <p>Sustainability and profitability go hand in hand.<br/>We believe surplus food should be valued, not wasted.</p>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-strip">
+    <h2>Don't miss today's deals.</h2>
+    <p>Join thousands of others saving money while rescuing perfectly good meals.</p>
+    <button class="btn btn-p" onclick="window.location.href='customer.html'">See deals near you</button>
+  </div>
+
+  <footer>
+    <div style="display:flex;gap:1.5rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap">
+      <a onclick="go('home')">Home</a><a onclick="go('about')">About</a><a onclick="go('knowledge')">Food Waste</a>
+      <a href="customer.html">Browse Deals</a><a href="merchant.html">For Shops</a>
+    </div>
+    <div class="logo-text" style="font-family:var(--serif);font-size:20px;letter-spacing:2px;margin-bottom:.5rem">KAINTOGO</div>
+    <p>© 2026 KainToGoPH — Save Money. Rescue Food.</p>
+  </footer>
+</div>
+
+<!-- ABOUT PAGE -->
+<div id="p-about" class="page">
+  <div class="about-hero">
+    <h1>Better deals on meals near you —<br/><em>powered by surplus food</em></h1>
+    <p>We help local shops sell their unsold meals at lower prices — so food gets eaten, not wasted.</p>
+  </div>
+  <div class="sec" style="max-width:800px">
+    <div class="sec-label">Our Story</div>
+    <h2 class="sec-title" style="font-size:32px">How it all started</h2>
+    <p style="font-size:14px;color:var(--gray);line-height:1.9;margin-bottom:1rem">In 2025, we visited local bakeries and restaurants across Manila. At closing time, we saw trays of fresh food being discarded — not because it wasn't good, but because it hadn't sold.</p>
+    <p style="font-size:14px;color:var(--gray);line-height:1.9;margin-bottom:1rem">For shops, it meant lost revenue. For the city, it meant unnecessary waste.</p>
+    <div style="border-left:4px solid var(--g);padding:1rem 1.5rem;margin:1.5rem 0;background:var(--gl);border-radius:0 var(--r) var(--r) 0">
+      <p style="font-family:var(--serif);font-size:22px;color:var(--g);font-style:italic">We realized something simple: The problem wasn't food. It was distribution.</p>
+    </div>
+    <p style="font-size:14px;color:var(--gray);line-height:1.9;margin-bottom:2rem">KainToGo was built to fix that.</p>
+    <a style="color:var(--g);font-size:12px;font-weight:700;text-decoration:none;cursor:pointer">Follow the journey →</a>
+  </div>
+
+  <div style="background:var(--gl);padding:3rem 2rem">
+    <div style="max-width:900px;margin:0 auto">
+      <div class="sec-label">What we do</div>
+      <h2 class="sec-title">We connect local shops with people nearby looking for affordable meals.</h2>
+      <div class="vp-grid" style="margin-top:1.5rem">
+        <div class="vp-card"><div class="vp-ico">🧠</div><h4 class="vp-title">Smart Selling</h4><p class="vp-desc">Shops sell their unsold food at discounted prices.</p></div>
+        <div class="vp-card"><div class="vp-ico">📍</div><h4 class="vp-title">Easy Discovery</h4><p class="vp-desc">Users discover daily deals near them.</p></div>
+        <div class="vp-card"><div class="vp-ico">🏆</div><h4 class="vp-title">Everyone Wins</h4><p class="vp-desc">A win for users, a win for local businesses.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec" style="max-width:900px">
+    <div class="sec-label">Why it works</div>
+    <p style="font-size:14px;color:var(--gray);line-height:1.9;max-width:600px;margin-bottom:2rem">Food doesn't go to waste because it's bad — it goes to waste because it's unsold. By offering time-based deals, we match supply with demand at the right moment.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:400px">
+      <div style="border-top:3px solid var(--g);padding-top:1rem"><div style="font-family:var(--serif);font-size:42px;color:var(--g)">8,503+</div><p style="font-size:12px;color:var(--gray)">Meals Saved</p></div>
+      <div style="border-top:3px solid var(--g);padding-top:1rem"><div style="font-family:var(--serif);font-size:42px;color:var(--g)">12,405kg</div><p style="font-size:12px;color:var(--gray)">CO₂ Prevented</p></div>
+    </div>
+  </div>
+
+  <div style="background:var(--w);padding:3rem 2rem">
+    <div style="max-width:800px;margin:0 auto">
+      <div class="sec-label">Meet the Founders</div>
+      <div class="founders-grid">
+        <div class="founder-card"><div class="founder-av">J</div><div class="founder-name">Jonathan</div><div class="founder-role">CEO & Visionary</div><p class="founder-quote">"We're building a simple way to turn unsold food into real value for both shops and users."</p></div>
+        <div class="founder-card"><div class="founder-av">I</div><div class="founder-name">Ivan</div><div class="founder-role">CTO</div><p class="founder-quote">"We focus on making the experience fast, simple, and reliable for everyday use."</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-strip">
+    <h2>Become part of the KainFam.</h2>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:1.25rem">
+      <button class="btn btn-p" onclick="window.location.href='customer.html'">See deals near you</button>
+      <button class="btn btn-o" style="border-color:rgba(255,255,255,.4);color:white" onclick="window.location.href='merchant.html'">Own a shop? Partner with us</button>
+    </div>
+  </div>
+  <footer><p style="margin-bottom:.5rem">© 2026 KainToGoPH — Save Money. Rescue Food.</p></footer>
+</div>
+
+<!-- KNOWLEDGE HUB -->
+<div id="p-knowledge" class="page">
+  <div class="kb-hero">
+    <div class="sec-label" style="color:rgba(255,255,255,.7)">Knowledge Hub</div>
+    <h1>Understanding<br/><em>Food Waste.</em></h1>
+    <p style="font-size:13px;color:rgba(255,255,255,.8);max-width:520px;margin:1rem auto 0;line-height:1.8">The first step to solving the problem is understanding its scale. Explore the facts, find resources, and join the conversation that matters.</p>
+  </div>
+  <div class="sec">
+    <div class="sec-label">The Stark Reality</div>
+    <h2 class="sec-title">The numbers don't lie.</h2>
+    <div class="facts-grid">
+      <div class="fact-card"><div class="fact-num">1/3</div><div class="fact-lbl">Global Waste</div><p class="fact-desc">Of all food produced for human consumption is lost or wasted.</p></div>
+      <div class="fact-card"><div class="fact-num">1,717</div><div class="fact-lbl">PH Daily Waste</div><p class="fact-desc">Metric tons of food wasted in the Philippines every single day.</p></div>
+      <div class="fact-card"><div class="fact-num">8-10%</div><div class="fact-lbl">Climate Impact</div><p class="fact-desc">Of global greenhouse gas emissions come from food waste.</p></div>
+      <div class="fact-card"><div class="fact-num">#1</div><div class="fact-lbl">Methane Source</div><p class="fact-desc">Food waste is the single largest component in our local landfills.</p></div>
+    </div>
+  </div>
+  <div style="background:var(--gl);padding:3rem 2rem">
+    <div style="max-width:1000px;margin:0 auto">
+      <div class="sec-label">Resources & Global Reports</div>
+      <h2 class="sec-title" style="margin-bottom:.5rem">Dive deeper into the data.</h2>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:1.5rem">Learn from the organizations leading the global movement against food waste. Knowledge is our first rescue tool.</p>
+      <div class="res-grid">
+        <div class="res-card"><div><span class="res-type b-blue">Global Report</span><div class="res-name">UNEP Food Waste Index</div><div class="res-org">United Nations Environment Programme</div></div></div>
+        <div class="res-card"><div><span class="res-type b-green">Local Initiative</span><div class="res-name">WWF Philippines: No Waste</div><div class="res-org">World Wildlife Fund PH</div></div></div>
+        <div class="res-card"><div><span class="res-type b-amber">Database</span><div class="res-name">FAO: Food Loss Database</div><div class="res-org">Food and Agriculture Organization</div></div></div>
+        <div class="res-card"><div><span class="res-type b-gray">Community</span><div class="res-name">Zero Waste Philippines</div><div class="res-org">Local advocacy group</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="cta-strip">
+    <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:.5rem;font-style:italic">Knowledge is power. Action is impact.</div>
+    <h2>Now that you know, help us change them.</h2>
+    <p>Start your first food rescue mission today and join the movement.</p>
+    <button class="btn btn-p" style="margin-top:1rem" onclick="window.location.href='customer.html'">Start Rescuing</button>
+  </div>
+  <footer><p>© 2026 KainToGoPH — Save Money. Rescue Food.</p></footer>
+</div>
+
+<div class="toast-con" id="toastCon"></div>
+<script>
+document.getElementById('sharedStyle').textContent = SHARED_CSS;
+function go(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('act'));
+  document.querySelectorAll('.nav-links a').forEach(x=>x.classList.remove('act'));
+  document.getElementById('p-'+p)?.classList.add('act');
+  document.getElementById('nl-'+p)?.classList.add('act');
+  document.getElementById('navLinks').classList.remove('open');
+  window.scrollTo(0,0);
+}
+function scrollToHow(){
+  document.getElementById('howItWorks')?.scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body></html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sign In — KainToGo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="kaintogo-shared.js"></script>
+<style>
+:root{
+  --g:#1B4D3E;--gl:#E5F5E8;--gd:#133829;
+  --w:#FFFFFF;--dark:#212529;--gray:#6c757d;--lgray:#f8f9fa;
+  --bdr:#dee2e6;--red:#dc3545;--amber:#e8a020;
+  --r:8px;--rl:16px;
+  --sh:0 2px 12px rgba(27,77,62,.10);--shl:0 8px 32px rgba(27,77,62,.15);
+  --serif:'Cormorant Garamond',serif;--sans:'Montserrat',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--g);min-height:100vh;display:flex;flex-direction:column}
+nav{background:rgba(0,0,0,.15);padding:0 1.5rem;display:flex;align-items:center;height:60px}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none}
+.logo img{height:32px;object-fit:contain}
+.logo-text{font-family:var(--serif);font-size:19px;font-weight:600;color:white;letter-spacing:2px}
+.wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1rem}
+.card{background:var(--w);border-radius:20px;padding:2.5rem 2rem;width:100%;max-width:420px;box-shadow:var(--shl)}
+.card h2{font-family:var(--serif);font-size:30px;font-weight:300;color:var(--dark);margin-bottom:.25rem}
+.card h2 em{font-style:italic;font-weight:600;color:var(--g)}
+.card .sub{font-size:12px;color:var(--gray);margin-bottom:1.75rem}
+.tabs{display:flex;gap:4px;background:var(--lgray);border-radius:var(--r);padding:4px;margin-bottom:1.75rem}
+.tab{flex:1;text-align:center;padding:8px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;color:var(--gray);transition:all .2s}
+.tab.act{background:var(--w);color:var(--g);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.fg{margin-bottom:1rem}
+.fg label{display:block;font-size:10px;font-weight:700;color:var(--dark);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+.fg input{width:100%;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:var(--r);font-family:var(--sans);font-size:13px;color:var(--dark);transition:border-color .2s;background:var(--w)}
+.fg input:focus{outline:none;border-color:var(--g)}
+.btn{width:100%;padding:13px;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;border-radius:var(--r);border:none;cursor:pointer;transition:all .2s;margin-top:.25rem}
+.btn-p{background:var(--g);color:white}.btn-p:hover{background:var(--gd)}
+.err{background:#fff5f5;border:1px solid #f5c6c6;color:var(--red);border-radius:var(--r);padding:10px 14px;font-size:12px;margin-bottom:1rem;display:none}
+.link{color:var(--g);cursor:pointer;font-weight:700}
+.divider{text-align:center;font-size:11px;color:var(--gray);margin:1.25rem 0;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--bdr)}
+.divider::before{left:0}.divider::after{right:0}
+.demo-box{background:var(--gl);border-radius:var(--r);padding:1rem;margin-top:1.25rem}
+.demo-box p{font-size:10px;font-weight:700;color:var(--g);letter-spacing:.5px;text-transform:uppercase;margin-bottom:.6rem}
+.demo-item{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(27,77,62,.1);cursor:pointer}
+.demo-item:last-child{border-bottom:none}
+.demo-item:hover .demo-fill{opacity:1}
+.demo-label{font-size:11px;font-weight:600;color:var(--dark)}
+.demo-email{font-size:10px;color:var(--gray)}
+.demo-fill{font-size:10px;font-weight:700;color:var(--g);opacity:.5;transition:opacity .2s}
+footer-note{display:block;text-align:center;font-size:11px;color:rgba(255,255,255,.5);padding:1.25rem;margin-top:auto}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="index.html">
+    <img src="V3_light_BG.png" alt="KainToGo" onerror="this.style.display='none'"/>
+    <span class="logo-text">KAINTOGO</span>
+  </a>
+</nav>
+
+<div class="wrap">
+  <div class="card">
+
+    <!-- TAB SWITCHER -->
+    <div class="tabs">
+      <div class="tab act" id="tab-login" onclick="switchTab('login')">Sign In</div>
+      <div class="tab" id="tab-register" onclick="switchTab('register')">Join Free</div>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="form-login">
+      <h2>Welcome <em>back</em></h2>
+      <p class="sub">Sign in to your KainToGo account</p>
+      <div class="err" id="loginErr"></div>
+      <div class="fg"><label>Email</label><input type="email" id="lEmail" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="btn btn-p" onclick="doLogin()">Sign In</button>
+      <div style="text-align:center;margin-top:1rem;font-size:12px;color:var(--gray)">
+        No account? <span class="link" onclick="switchTab('register')">Join free →</span>
+      </div>
+      <div class="divider">or try a demo account</div>
+      <div class="demo-box">
+        <p>Demo accounts — password: <strong style="color:var(--g)">demo123</strong></p>
+        <div class="demo-item" onclick="fillDemo('customer@demo.com')">
+          <div><div class="demo-label">🛍️ Customer</div><div class="demo-email">customer@demo.com</div></div>
+          <span class="demo-fill">Use →</span>
+        </div>
+        <div class="demo-item" onclick="fillDemo('merchant@demo.com')">
+          <div><div class="demo-label">🏪 Merchant</div><div class="demo-email">merchant@demo.com</div></div>
+          <span class="demo-fill">Use →</span>
+        </div>
+        <div class="demo-item" onclick="fillDemo('hq@demo.com')">
+          <div><div class="demo-label">🏢 Brand HQ</div><div class="demo-email">hq@demo.com</div></div>
+          <span class="demo-fill">Use →</span>
+        </div>
+        <div class="demo-item" onclick="fillDemo('partner@demo.com')">
+          <div><div class="demo-label">🤝 Partner NGO</div><div class="demo-email">partner@demo.com</div></div>
+          <span class="demo-fill">Use →</span>
+        </div>
+        <div class="demo-item" onclick="fillDemo('admin@demo.com')">
+          <div><div class="demo-label">⚙️ Admin</div><div class="demo-email">admin@demo.com</div></div>
+          <span class="demo-fill">Use →</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="form-register" style="display:none">
+      <h2>Join the <em>KainFam</em></h2>
+      <p class="sub">Create your free account and start rescuing food</p>
+      <div class="err" id="regErr"></div>
+      <div class="fg"><label>Full Name</label><input id="rName" placeholder="Your name" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <div class="fg"><label>Email</label><input type="email" id="rEmail" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="rPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <button class="btn btn-p" onclick="doRegister()">Create Account</button>
+      <div style="text-align:center;margin-top:1rem;font-size:12px;color:var(--gray)">
+        Already have one? <span class="link" onclick="switchTab('login')">Sign in →</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer-note>© 2026 KainToGoPH — Save Money. Rescue Food.</footer-note>
+
+<script>
+// If already logged in, redirect immediately
+const cu = getCurrentUser();
+if (cu) redirectByRole(cu.role);
+
+// Switch between Sign In / Join Free tabs
+function switchTab(t) {
+  document.getElementById('form-login').style.display   = t === 'login'    ? 'block' : 'none';
+  document.getElementById('form-register').style.display = t === 'register' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('act',    t === 'login');
+  document.getElementById('tab-register').classList.toggle('act', t === 'register');
+}
+
+// Pre-fill demo credentials
+function fillDemo(email) {
+  document.getElementById('lEmail').value = email;
+  document.getElementById('lPass').value  = 'demo123';
+  showErr('loginErr', '');
+}
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+// LOGIN
+function doLogin() {
+  const email = document.getElementById('lEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('lPass').value;
+  if (!email || !pass) { showErr('loginErr', 'Please fill in all fields.'); return; }
+
+  const users = allUsers();
+  const u = users.find(x => x.email.toLowerCase() === email && x.password === pass);
+  if (!u) { showErr('loginErr', 'Wrong email or password. Try a demo account below.'); return; }
+
+  setCurrentUser(u);
+  redirectByRole(u.role);
+}
+
+// REGISTER
+function doRegister() {
+  const name  = document.getElementById('rName').value.trim();
+  const email = document.getElementById('rEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('rPass').value;
+  if (!name || !email || !pass) { showErr('regErr', 'Please fill in all fields.'); return; }
+
+  const existing = allUsers().find(x => x.email.toLowerCase() === email);
+  if (existing) { showErr('regErr', 'This email is already registered.'); return; }
+
+  const newU = {
+    id: genId('u'), email, password: pass, name,
+    role: 'customer',
+    avatar: name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2),
+    ktgId: 'KTG-' + Math.floor(10000 + Math.random() * 90000),
+  };
+  const users = kLoad('users') || [];
+  users.push(newU);
+  kSave('users', users);
+  setCurrentUser(newU);
+  redirectByRole('customer');
+}
+
+// Redirect to the right dashboard
+function redirectByRole(role) {
+  const map = {
+    customer: 'customer.html',
+    merchant: 'merchant.html',
+    admin:    'admin.html',
+    hq:       'hq.html',
+    partner:  'partner.html',
+  };
+  window.location.href = map[role] || 'customer.html';
+}
+
+// Check hash for direct register link
+if (window.location.hash === '#register') switchTab('register');
+</script>
+</body>
+</html>

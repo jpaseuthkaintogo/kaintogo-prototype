@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Browse Deals — KainToGo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="kaintogo-shared.js"></script>
+<style>
+:root{
+  --g:#1B4D3E;--gl:#E5F5E8;--gm:#2d6b58;--gd:#133829;
+  --w:#FFFFFF;--dark:#212529;--gray:#6c757d;--lgray:#f8f9fa;
+  --bdr:#dee2e6;--amber:#e8a020;--amber-l:#fff8e6;--red:#dc3545;
+  --r:8px;--rl:16px;
+  --sh:0 2px 12px rgba(27,77,62,.10);--shl:0 8px 32px rgba(27,77,62,.15);
+  --serif:'Cormorant Garamond',serif;--sans:'Montserrat',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--lgray);color:var(--dark)}
+.btn{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.8px;padding:9px 22px;border-radius:var(--r);border:1.5px solid var(--g);cursor:pointer;transition:all .2s;text-transform:uppercase;display:inline-block}
+.btn-p{background:var(--g);color:var(--w)}.btn-p:hover{background:var(--gd)}
+.btn-o{background:transparent;color:var(--g)}.btn-o:hover{background:var(--gl)}
+.btn-sm{padding:6px 14px;font-size:10px}
+.btn-amber{background:var(--amber);color:var(--w);border-color:var(--amber)}.btn-amber:hover{background:#c8881a}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.b-green{background:var(--gl);color:var(--g)}.b-amber{background:#fff3cd;color:#856404}
+.toast-con{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--dark);color:white;padding:11px 18px;border-radius:var(--r);font-size:12px;font-weight:500;box-shadow:var(--shl);animation:tin .3s ease;max-width:320px}
+.toast.s{background:var(--g)}.toast.e{background:var(--red)}
+@keyframes tin{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* NAV */
+nav{background:var(--w);border-bottom:1px solid var(--bdr);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:400}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none}
+.logo img{height:36px;object-fit:contain}
+.logo-text{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--g);letter-spacing:2px}
+.nav-links{display:flex;align-items:center;gap:1.5rem}
+.nav-links a{font-size:11px;font-weight:600;color:var(--gray);text-decoration:none;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:color .2s}
+.nav-links a:hover,.nav-links a.act{color:var(--g)}
+.nav-r{display:flex;align-items:center;gap:8px}
+.ham{display:none;background:none;border:none;cursor:pointer;font-size:22px;color:var(--dark)}
+
+/* PAGE HEADER */
+.browse-header{background:var(--g);color:white;padding:2.5rem 1.5rem 2rem}
+.browse-header-inner{max-width:1200px;margin:0 auto}
+.browse-header h1{font-family:var(--serif);font-size:clamp(28px,4vw,44px);font-weight:300;margin-bottom:.4rem}
+.browse-header h1 em{font-style:italic;font-weight:600}
+.browse-header p{font-size:13px;color:rgba(255,255,255,.75);margin-bottom:1.25rem}
+
+/* VIEW TOGGLE */
+.view-toggle{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toggle-btn{display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:var(--r);font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:white;transition:all .2s;text-transform:uppercase}
+.toggle-btn.act{background:white;color:var(--g);border-color:white}
+.toggle-btn:not(.act):hover{background:rgba(255,255,255,.1)}
+
+/* FILTERS BAR */
+.filters-bar{background:var(--w);border-bottom:1px solid var(--bdr);padding:.75rem 1.5rem;position:sticky;top:64px;z-index:300}
+.filters-inner{max-width:1200px;margin:0 auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fsel{padding:7px 12px;border:1.5px solid var(--bdr);border-radius:var(--r);font-family:var(--sans);font-size:11px;font-weight:600;color:var(--dark);background:var(--w);cursor:pointer}
+.fsel:focus{outline:none;border-color:var(--g)}
+.search-in{padding:8px 14px;border:1.5px solid var(--bdr);border-radius:var(--r);font-family:var(--sans);font-size:12px;color:var(--dark);background:var(--w);min-width:200px}
+.search-in:focus{outline:none;border-color:var(--g)}
+.results-count{font-size:11px;color:var(--gray);font-weight:600;margin-left:auto}
+
+/* MAIN LAYOUT */
+.browse-main{max-width:1200px;margin:0 auto;padding:1.5rem}
+
+/* LIST VIEW */
+#listView{display:block}
+.deals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem}
+.deal-card{background:var(--w);border-radius:var(--rl);box-shadow:var(--sh);overflow:hidden;transition:box-shadow .2s,transform .15s;cursor:pointer}
+.deal-card:hover{box-shadow:var(--shl);transform:translateY(-2px)}
+.deal-card-top{padding:1.25rem 1.25rem .75rem;display:flex;align-items:flex-start;gap:12px}
+.deal-emoji{font-size:40px;width:60px;height:60px;background:var(--gl);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.deal-info{flex:1;min-width:0}
+.deal-shop{font-size:10px;font-weight:700;color:var(--g);letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
+.deal-name{font-family:var(--serif);font-size:18px;color:var(--dark);margin-bottom:3px;line-height:1.2}
+.deal-location{font-size:11px;color:var(--gray);display:flex;align-items:center;gap:4px}
+.deal-card-mid{padding:.5rem 1.25rem;display:flex;gap:6px;flex-wrap:wrap}
+.deal-card-bottom{padding:.75rem 1.25rem 1.25rem;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--bdr);gap:8px}
+.deal-price{display:flex;align-items:baseline;gap:6px}
+.deal-price-now{font-family:var(--serif);font-size:26px;font-weight:600;color:var(--g)}
+.deal-price-orig{font-size:12px;color:var(--gray);text-decoration:line-through}
+.deal-discount{background:var(--amber);color:white;font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:20px}
+.deal-pickup{font-size:10px;color:var(--gray);display:flex;align-items:center;gap:4px;margin-top:4px}
+.deal-qty{font-size:10px;color:var(--gray);display:flex;align-items:center;gap:4px}
+.qty-low{color:#e74c3c;font-weight:700}
+
+/* MAP VIEW */
+#mapView{display:none}
+.map-layout{display:grid;grid-template-columns:360px 1fr;gap:0;height:calc(100vh - 175px);min-height:500px}
+.map-sidebar{overflow-y:auto;background:var(--w);border-right:1px solid var(--bdr)}
+.map-sidebar-header{padding:1rem;border-bottom:1px solid var(--bdr);font-size:12px;font-weight:700;color:var(--gray);letter-spacing:.5px;text-transform:uppercase}
+.map-deal-item{padding:1rem;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .15s;display:flex;gap:10px;align-items:flex-start}
+.map-deal-item:hover,.map-deal-item.sel{background:var(--gl)}
+.map-deal-item.sel{border-left:3px solid var(--g)}
+.map-deal-emoji{font-size:28px;width:44px;height:44px;background:var(--gl);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.map-deal-info{flex:1;min-width:0}
+.map-deal-shop{font-size:10px;font-weight:700;color:var(--g);letter-spacing:.4px;text-transform:uppercase}
+.map-deal-name{font-family:var(--serif);font-size:15px;margin-bottom:2px;line-height:1.2}
+.map-deal-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.map-deal-price{font-family:var(--serif);font-size:18px;font-weight:600;color:var(--g)}
+.map-deal-pickup{font-size:10px;color:var(--gray)}
+#map{height:100%;z-index:1}
+
+/* MODAL */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:none;align-items:center;justify-content:center;padding:1rem}
+.moverlay.open{display:flex}
+.modal{background:var(--w);border-radius:var(--rl);padding:2rem;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;position:relative}
+.modal h3{font-family:var(--serif);font-size:24px;color:var(--g);margin-bottom:1.25rem}
+.close-x{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray)}
+.mfoot{display:flex;gap:10px;justify-content:flex-end;margin-top:1.5rem;flex-wrap:wrap}
+.detail-emoji{font-size:64px;text-align:center;margin-bottom:1rem}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--bdr)}
+.detail-row:last-of-type{border-bottom:none}
+.detail-lbl{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:.6px;text-transform:uppercase}
+.detail-val{font-size:13px;font-weight:600;color:var(--dark)}
+.detail-price-block{text-align:center;padding:1rem;background:var(--gl);border-radius:var(--r);margin:1rem 0}
+.detail-price-now{font-family:var(--serif);font-size:42px;font-weight:600;color:var(--g)}
+.detail-price-orig{font-size:14px;color:var(--gray);text-decoration:line-through;margin-left:8px}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--gray)}
+.empty-state .ico{font-size:56px;margin-bottom:1rem}
+.empty-state h3{font-family:var(--serif);font-size:22px;color:var(--dark);margin-bottom:.5rem}
+.empty-state p{font-size:13px;line-height:1.7}
+
+/* FOOTER */
+footer{background:var(--gd);color:white;padding:2rem;text-align:center;margin-top:2rem}
+footer a{font-size:11px;color:rgba(255,255,255,.6);text-decoration:none;cursor:pointer;margin:0 .75rem}
+footer a:hover{color:white}
+
+@media(max-width:900px){
+  .map-layout{grid-template-columns:1fr;height:auto}
+  .map-sidebar{max-height:300px}
+  #map{height:400px}
+  .nav-links{display:none;position:absolute;top:64px;left:0;right:0;background:var(--w);border-bottom:1px solid var(--bdr);padding:1rem;flex-direction:column;z-index:300}
+  .nav-links.open{display:flex}
+  .ham{display:block}
+}
+@media(max-width:600px){
+  .deals-grid{grid-template-columns:1fr}
+  .browse-main{padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="index.html">
+    <img src="V3_light_BG.png" alt="KainToGo" onerror="this.style.display='none'"/>
+    <span class="logo-text">KAINTOGO</span>
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">Home</a>
+    <a href="index.html#about">About</a>
+    <a href="index.html#knowledge">Food Waste</a>
+    <a href="browse.html" class="act">Browse Deals</a>
+  </div>
+  <div class="nav-r">
+    <button class="btn btn-o btn-sm" onclick="window.location.href='login.html'">Sign In</button>
+    <button class="btn btn-p btn-sm" style="margin-left:6px" onclick="window.location.href='login.html#register'">Join Free</button>
+    <button class="ham" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="browse-header">
+  <div class="browse-header-inner">
+    <h1>Deals <em>near you</em></h1>
+    <p id="dealCountHeader">Loading available bags…</p>
+    <div class="view-toggle">
+      <button class="toggle-btn act" id="btnList" onclick="setView('list')">📋 List</button>
+      <button class="toggle-btn" id="btnMap" onclick="setView('map')">🗺️ Map</button>
+    </div>
+  </div>
+</div>
+
+<!-- FILTERS BAR -->
+<div class="filters-bar">
+  <div class="filters-inner">
+    <input class="search-in" type="text" id="searchIn" placeholder="🔍  Search shop or meal…" oninput="renderDeals()"/>
+    <select class="fsel" id="catFilter" onchange="renderDeals()">
+      <option value="">All categories</option>
+      <option value="Meals">Meals</option>
+      <option value="Breads & Pastries">Breads & Pastries</option>
+      <option value="Groceries">Groceries</option>
+    </select>
+    <select class="fsel" id="sortFilter" onchange="renderDeals()">
+      <option value="price-asc">Price: low to high</option>
+      <option value="price-desc">Price: high to low</option>
+      <option value="discount">Best discount</option>
+      <option value="qty">Most available</option>
+    </select>
+    <span class="results-count" id="resultsCount"></span>
+  </div>
+</div>
+
+<!-- BROWSE MAIN -->
+<div class="browse-main">
+
+  <!-- LIST VIEW -->
+  <div id="listView">
+    <div class="deals-grid" id="dealsGrid"></div>
+    <div id="emptyState" class="empty-state hidden">
+      <div class="ico">🔍</div>
+      <h3>No deals found</h3>
+      <p>Try adjusting your search or filters.<br/>New deals are added daily!</p>
+    </div>
+  </div>
+
+  <!-- MAP VIEW -->
+  <div id="mapView">
+    <div class="map-layout">
+      <div class="map-sidebar">
+        <div class="map-sidebar-header" id="mapSidebarCount"></div>
+        <div id="mapDealsList"></div>
+      </div>
+      <div id="map"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DEAL DETAIL MODAL -->
+<div class="moverlay" id="modDeal" onclick="if(event.target===this)closeDeal()">
+  <div class="modal">
+    <button class="close-x" onclick="closeDeal()">✕</button>
+    <div id="modalContent"></div>
+    <div class="mfoot">
+      <button class="btn btn-o btn-sm" onclick="closeDeal()">Close</button>
+      <button class="btn btn-amber" id="modalReserveBtn">🛒 Reserve this bag</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-con" id="toastCon"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div style="margin-bottom:1rem">
+    <a href="index.html">Home</a>
+    <a href="index.html">About</a>
+    <a href="browse.html">Browse Deals</a>
+    <a href="merchant.html">For Shops</a>
+  </div>
+  <div style="font-family:var(--serif);font-size:20px;letter-spacing:2px;margin-bottom:.5rem">KAINTOGO</div>
+  <p style="font-size:11px;color:rgba(255,255,255,.5)">© 2026 KainToGoPH — Save Money. Rescue Food.</p>
+</footer>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────
+let allBags = [];
+let allShops = [];
+let leafletMap = null;
+let markers = {};
+let currentView = 'list';
+let selectedBagId = null;
+
+function init() {
+  // Use seed data (no login required for browsing)
+  allBags = seedBags().filter(b => b.active && b.qtyLeft > 0);
+  allShops = SHOPS;
+
+  const total = allBags.length;
+  document.getElementById('dealCountHeader').textContent =
+    total + ' rescue bag' + (total !== 1 ? 's' : '') + ' available today';
+
+  renderDeals();
+}
+
+// ─── FILTERS ─────────────────────────────────────────────────────
+function getFiltered() {
+  const q = document.getElementById('searchIn').value.toLowerCase().trim();
+  const cat = document.getElementById('catFilter').value;
+  const sort = document.getElementById('sortFilter').value;
+
+  let bags = allBags.filter(b => {
+    if (cat && b.cat !== cat) return false;
+    if (q && !b.name.toLowerCase().includes(q) && !b.shop.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if (sort === 'price-asc') bags.sort((a, b) => a.price - b.price);
+  else if (sort === 'price-desc') bags.sort((a, b) => b.price - a.price);
+  else if (sort === 'discount') bags.sort((a, b) => (b.orig - b.price) / b.orig - (a.orig - a.price) / a.orig);
+  else if (sort === 'qty') bags.sort((a, b) => b.qtyLeft - a.qtyLeft);
+
+  return bags;
+}
+
+// ─── LIST VIEW ───────────────────────────────────────────────────
+function renderDeals() {
+  const bags = getFiltered();
+  const grid = document.getElementById('dealsGrid');
+  const empty = document.getElementById('emptyState');
+  document.getElementById('resultsCount').textContent = bags.length + ' deal' + (bags.length !== 1 ? 's' : '');
+
+  if (bags.length === 0) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    grid.innerHTML = bags.map(b => dealCard(b)).join('');
+  }
+
+  if (currentView === 'map') renderMapSidebar(bags);
+}
+
+function dealCard(b) {
+  const disc = Math.round((1 - b.price / b.orig) * 100);
+  const shop = allShops.find(s => s.id === b.shopId) || {};
+  const qtyClass = b.qtyLeft <= 2 ? 'qty-low' : '';
+  return `
+  <div class="deal-card" onclick="openDeal('${b.id}')">
+    <div class="deal-card-top">
+      <div class="deal-emoji">${b.emoji}</div>
+      <div class="deal-info">
+        <div class="deal-shop">${b.shop}</div>
+        <div class="deal-name">${b.name}</div>
+        <div class="deal-location">📍 ${shop.location || ''}</div>
+        <div class="deal-pickup">⏰ Pick up: ${b.pickup}</div>
+      </div>
+    </div>
+    <div class="deal-card-mid">
+      <span class="badge b-green">${b.cat}</span>
+      ${b.diet && b.diet.includes('vegan') ? '<span class="badge b-green">🌱 Vegan</span>' : ''}
+      ${b.diet && b.diet.includes('vegetarian') && !b.diet.includes('vegan') ? '<span class="badge b-green">🥦 Vegetarian</span>' : ''}
+      ${b.bagType === 'one-time' ? '<span class="badge b-amber">⚡ One-time</span>' : '<span class="badge b-blue">🔄 Daily</span>'}
+    </div>
+    <div class="deal-card-bottom">
+      <div>
+        <div class="deal-price">
+          <span class="deal-price-now">₱${b.price}</span>
+          <span class="deal-price-orig">₱${b.orig}</span>
+          <span class="deal-discount">-${disc}%</span>
+        </div>
+        <div class="deal-qty ${qtyClass}">📦 ${b.qtyLeft} left</div>
+      </div>
+      <button class="btn btn-amber btn-sm" onclick="event.stopPropagation();openDeal('${b.id}')">Reserve →</button>
+    </div>
+  </div>`;
+}
+
+// ─── MAP VIEW ────────────────────────────────────────────────────
+function setView(v) {
+  currentView = v;
+  document.getElementById('listView').style.display = v === 'list' ? 'block' : 'none';
+  document.getElementById('mapView').style.display = v === 'map' ? 'block' : 'none';
+  document.getElementById('btnList').classList.toggle('act', v === 'list');
+  document.getElementById('btnMap').classList.toggle('act', v === 'map');
+
+  if (v === 'map') {
+    initMap();
+    renderMapSidebar(getFiltered());
+  }
+}
+
+function initMap() {
+  if (leafletMap) { leafletMap.invalidateSize(); return; }
+
+  leafletMap = L.map('map').setView(MAP_CONFIG.center, MAP_CONFIG.zoom);
+  L.tileLayer(MAP_CONFIG.tileUrl, { attribution: MAP_CONFIG.tileAttrib }).addTo(leafletMap);
+
+  // One marker per shop that has active bags
+  const bags = getFiltered();
+  const shopIds = [...new Set(bags.map(b => b.shopId))];
+
+  shopIds.forEach(sid => {
+    const shop = allShops.find(s => s.id === sid);
+    if (!shop) return;
+    const shopBags = bags.filter(b => b.shopId === sid);
+    const minPrice = Math.min(...shopBags.map(b => b.price));
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="
+        background:var(--g,#1B4D3E);color:white;padding:5px 10px;border-radius:20px;
+        font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+        white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3);
+        border:2px solid white;cursor:pointer;
+      ">${shop.img} ₱${minPrice}+</div>`,
+      iconAnchor: [30, 18],
+    });
+
+    const marker = L.marker([shop.lat, shop.lng], { icon }).addTo(leafletMap);
+    marker.on('click', () => selectShopOnMap(sid));
+    markers[sid] = marker;
+  });
+}
+
+function renderMapSidebar(bags) {
+  const sidebar = document.getElementById('mapDealsList');
+  const countEl = document.getElementById('mapSidebarCount');
+  countEl.textContent = bags.length + ' deal' + (bags.length !== 1 ? 's' : '') + ' available';
+
+  if (bags.length === 0) {
+    sidebar.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--gray);font-size:12px">No deals match your filters</div>';
+    return;
+  }
+
+  sidebar.innerHTML = bags.map(b => {
+    const disc = Math.round((1 - b.price / b.orig) * 100);
+    return `
+    <div class="map-deal-item${selectedBagId === b.id ? ' sel' : ''}" id="mdi-${b.id}" onclick="selectMapDeal('${b.id}')">
+      <div class="map-deal-emoji">${b.emoji}</div>
+      <div class="map-deal-info">
+        <div class="map-deal-shop">${b.shop}</div>
+        <div class="map-deal-name">${b.name}</div>
+        <div class="map-deal-row">
+          <span class="map-deal-price">₱${b.price} <span style="font-size:11px;color:var(--gray);text-decoration:line-through;font-weight:400">₱${b.orig}</span></span>
+          <span class="badge b-amber">-${disc}%</span>
+        </div>
+        <div style="font-size:10px;color:var(--gray);margin-top:3px">⏰ ${b.pickup} · 📦 ${b.qtyLeft} left</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectShopOnMap(shopId) {
+  const bag = getFiltered().find(b => b.shopId === shopId);
+  if (!bag) return;
+  selectMapDeal(bag.id);
+}
+
+function selectMapDeal(bagId) {
+  selectedBagId = bagId;
+  const bag = allBags.find(b => b.id === bagId);
+  if (!bag) return;
+
+  // Highlight sidebar item
+  document.querySelectorAll('.map-deal-item').forEach(el => el.classList.remove('sel'));
+  const el = document.getElementById('mdi-' + bagId);
+  if (el) { el.classList.add('sel'); el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+
+  // Pan map to shop
+  const shop = allShops.find(s => s.id === bag.shopId);
+  if (shop && leafletMap) {
+    leafletMap.setView([shop.lat, shop.lng], 15, { animate: true });
+    markers[shop.id]?.openPopup();
+  }
+
+  openDeal(bagId);
+}
+
+// ─── DEAL MODAL ──────────────────────────────────────────────────
+function openDeal(bagId) {
+  const b = allBags.find(x => x.id === bagId);
+  if (!b) return;
+  const shop = allShops.find(s => s.id === b.shopId) || {};
+  const disc = Math.round((1 - b.price / b.orig) * 100);
+
+  document.getElementById('modalContent').innerHTML = `
+    <div class="detail-emoji">${b.emoji}</div>
+    <h3>${b.name}</h3>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:1rem;line-height:1.6">${b.desc}</p>
+    <div class="detail-price-block">
+      <div class="detail-price-now">₱${b.price}</div>
+      <span class="detail-price-orig">₱${b.orig}</span>
+      <span class="deal-discount" style="background:var(--amber);color:white;font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:20px;margin-left:6px">-${disc}%</span>
+      <div style="font-size:11px;color:var(--gray);margin-top:6px">You save ₱${b.orig - b.price} on this bag</div>
+    </div>
+    <div class="detail-row"><span class="detail-lbl">Shop</span><span class="detail-val">${b.shop}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Location</span><span class="detail-val">📍 ${shop.location || '—'}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Pick-up window</span><span class="detail-val">⏰ ${b.pickup}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Available</span><span class="detail-val${b.qtyLeft <= 2 ? ' qty-low' : ''}">📦 ${b.qtyLeft} bag${b.qtyLeft !== 1 ? 's' : ''} left</span></div>
+    <div class="detail-row"><span class="detail-lbl">Category</span><span class="detail-val">${b.cat}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Food rescued</span><span class="detail-val">~${b.kg} kg · saves ${(b.kg * 1.3).toFixed(1)} kg CO₂</span></div>
+    <div class="detail-row"><span class="detail-lbl">Diet</span><span class="detail-val">${b.diet.join(', ')}</span></div>
+  `;
+
+  document.getElementById('modalReserveBtn').onclick = () => reserveBag(b.id);
+  document.getElementById('modDeal').classList.add('open');
+}
+
+function closeDeal() {
+  document.getElementById('modDeal').classList.remove('open');
+}
+
+function reserveBag(bagId) {
+  // If logged in, go to customer dashboard. Otherwise prompt sign-in.
+  const user = getCurrentUser();
+  if (user && user.role === 'customer') {
+    window.location.href = 'customer.html';
+  } else {
+    closeDeal();
+    // Small toast then redirect
+    const con = document.getElementById('toastCon');
+    const el = document.createElement('div');
+    el.className = 'toast s';
+    el.textContent = '👋 Sign in to reserve this bag!';
+    con.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+    setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+  }
+}
+
+// ─── BOOT ────────────────────────────────────────────────────────
+window.onload = init;
+</script>
+</body>
+</html>
